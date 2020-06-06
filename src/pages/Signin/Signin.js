@@ -40,19 +40,17 @@ export default class SignUp extends Component {
     this.setState({ isLoading: true });
 
     try {
-      await Auth.signIn(this.state.email, this.state.password);
-      this.props.setAuthenticated(true);
-      Auth.currentUserInfo()
-        .then((data) => {
-          const token = jwt.encode(
-            { username: data.username },
-            process.env.REACT_APP_API_SECRET,
-            "HS256"
-          );
-          localStorage.setItem("username", token);
-        })
-        .catch((err) => console.log(err));
-      this.props.history.push("/chat");
+      Auth.signIn(this.state.email, this.state.password).then((data) => {
+        console.log(data.username);
+        const token = jwt.encode(
+          { username: data.username },
+          process.env.REACT_APP_API_SECRET,
+          "HS256"
+        );
+        localStorage.setItem("username", token);
+        this.props.setAuthenticated(true);
+        this.props.history.push("/chat");
+      });
     } catch (e) {
       alert(e.message);
       this.setState({ isLoading: false });
