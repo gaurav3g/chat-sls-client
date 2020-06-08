@@ -41,13 +41,16 @@ export default class SignUp extends Component {
 
     try {
       Auth.signIn(this.state.email, this.state.password).then((data) => {
-        console.log(data.username);
         const token = jwt.encode(
-          { username: data.username },
+          {
+            uid: data.username,
+            email: data.attributes.email,
+            username: data.attributes.preferred_username,
+          },
           process.env.REACT_APP_API_SECRET,
           "HS256"
         );
-        localStorage.setItem("username", token);
+        localStorage.setItem("TALK2ME_TOKEN", token);
         this.props.setAuthenticated(true);
         this.props.history.push("/chat");
       });

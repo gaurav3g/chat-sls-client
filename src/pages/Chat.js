@@ -1,26 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { w3cwebsocket as W3CWebSocket } from "websocket";
 
-export default function Chat() {
+const Chat = (props) => {
+  const { client } = props;
   const [messageList, setMessageList] = useState([]);
   const [newMsg, setNewMsg] = useState("");
-  const [client, setClient] = useState(null);
-
-  useEffect(() => {
-    if (
-      !client &&
-      localStorage.getItem("username") &&
-      localStorage.getItem("username") !== ""
-    ) {
-      setClient(
-        new W3CWebSocket(
-          `${process.env.REACT_APP_WSS_APIURL}?token=${localStorage.getItem(
-            "username"
-          )}`
-        )
-      );
-    }
-  }, [client]);
+  // const [client, setClient] = useState(null);
 
   const handleChange = (event) => {
     setNewMsg(event.target.value);
@@ -30,7 +14,7 @@ export default function Chat() {
     event.preventDefault();
     const data = {
       action: "sendMessage",
-      token: localStorage.getItem("username"),
+      token: localStorage.getItem("TALK2ME_TOKEN"),
       content: newMsg,
     };
     client.send(JSON.stringify(data));
@@ -79,4 +63,6 @@ export default function Chat() {
       </form>
     </div>
   );
-}
+};
+
+export default Chat;

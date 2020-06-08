@@ -74,36 +74,6 @@ export default class SignUp extends Component {
     this.setState({ isLoading: false });
   };
 
-  // handleSubmit(event) {
-  //   event.preventDefault();
-  //   this.setState({ error: "" });
-  //   try {
-  //     if (this.state.username && this.state.username !== "") {
-  //       const token = jwt.encode(
-  //         { username: this.state.username },
-  //         "#0wc-0-$@$14e8rbk#bke_9rg@nglfdc3&6z_r6nx!q6&3##l=",
-  //         "HS256"
-  //       );
-  //       localStorage.setItem("username", token);
-  //     }
-
-  //     this.state.email &&
-  //       this.state.email !== "" &&
-  //       localStorage.setItem("email", this.state.email);
-
-  //     if (
-  //       localStorage.getItem("username") &&
-  //       localStorage.getItem("username") !== "" &&
-  //       localStorage.getItem("email") &&
-  //       localStorage.getItem("email") !== ""
-  //     ) {
-  //       return (window.location.href = "/chat");
-  //     }
-  //   } catch (error) {
-  //     this.setState({ error: error.message });
-  //   }
-  // }
-
   handleConfirmationSubmit = async (event) => {
     event.preventDefault();
 
@@ -112,13 +82,16 @@ export default class SignUp extends Component {
     try {
       await Auth.confirmSignUp(this.state.email, this.state.confirmationCode);
       Auth.signIn(this.state.email, this.state.password).then((data) => {
-        console.log(data.username);
         const token = jwt.encode(
-          { username: data.username },
+          {
+            uid: data.username,
+            email: data.attributes.email,
+            username: data.attributes.preferred_username,
+          },
           process.env.REACT_APP_API_SECRET,
           "HS256"
         );
-        localStorage.setItem("username", token);
+        localStorage.setItem("TALK2ME_TOKEN", token);
         this.props.setAuthenticated(true);
         this.props.history.push("/chat");
       });
