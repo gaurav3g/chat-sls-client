@@ -3,12 +3,12 @@ import { createStyles, makeStyles } from "@material-ui/core/styles";
 import {
   TextField,
   Button,
-  Avatar,
-  Chip,
-  InputAdornment,
-  IconButton,
+  // Avatar,
+  // Chip,
+  // InputAdornment,
+  // IconButton,
 } from "@material-ui/core";
-import AddBoxIcon from "@material-ui/icons/AddBox";
+// import AddBoxIcon from "@material-ui/icons/AddBox";
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -22,29 +22,53 @@ export default function NewConversation(props) {
   const { client } = props;
   const classes = useStyles();
 
-  const [input, setInput] = useState("");
-  const [participants, setParticipants] = useState([]);
+  // const [input, setInput] = useState("");
+  const [participant, setParticipant] = useState([]);
 
   const handleChange = (event) => {
-    setInput(event.target.value);
+    setParticipant(event.target.value);
   };
 
-  const onAdd = () => {
-    if (input !== "" && participants.indexOf(input) === -1) {
-      setParticipants([...participants, input]);
-      setInput("");
-    }
-  };
+  // const onAdd = () => {
+  //   if (input !== "" && participants.indexOf(input) === -1) {
+  //     setParticipant(input);
+  //     setInput("");
+  //   }
+  // };
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const data = {
-      action: "setConversation",
-      token: localStorage.getItem("TALK2ME_TOKEN"),
-      participants: participants,
-    };
-    client.send(JSON.stringify(data));
-    setParticipants([]);
+    fetch(
+      "https://600a8owvjh.execute-api.ap-south-1.amazonaws.com/dev/set-conversation",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          action: "setConversation",
+          token: localStorage.getItem("TALK2ME_TOKEN"),
+          participant: participant,
+        }),
+        headers: { "Content-Type": "application/json" },
+      }
+    )
+      // Axios.post(
+      //   "https://600a8owvjh.execute-api.ap-south-1.amazonaws.com/dev/set-conversation",
+      //   {
+      //     action: "setConversation",
+      //     token: localStorage.getItem("TALK2ME_TOKEN"),
+      //     participant: participant,
+      //   }
+      //   // {
+      //   //   headers: {
+      //   //     "Access-Control-Allow-Headers": "*",
+      //   //     "Content-Type": "application/json",
+      //   //   },
+      //   //   crossdomain: true,
+      //   // }
+      // )
+      .then((resp) => console.log(resp))
+      .catch((err) => console.log(err));
+
+    setParticipant("");
   };
 
   //   const handleDelete = (chipToDelete) => {
@@ -53,19 +77,19 @@ export default function NewConversation(props) {
   //     );
   //   };
 
-  const handleDelete = (chipToDelete) => () => {
-    debugger;
-    setParticipants((participants) =>
-      participants.filter((chip) => chip !== chipToDelete)
-    );
-  };
+  // const handleDelete = (chipToDelete) => () => {
+  //   debugger;
+  //   setParticipants((participants) =>
+  //     participants.filter((chip) => chip !== chipToDelete)
+  //   );
+  // };
 
   const validateForm = () => {
-    return participants.length > 0;
+    return participant.length > 0;
   };
 
   return (
-    <form onSubmit={onAdd}>
+    <form onSubmit={handleSubmit}>
       <TextField
         label="Add Participants"
         autoFocus
@@ -74,22 +98,22 @@ export default function NewConversation(props) {
         fullWidth
         margin="normal"
         variant="outlined"
-        value={input}
+        value={participant}
         onChange={handleChange}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton
-                aria-label="toggle password visibility"
-                onClick={onAdd}
-              >
-                <AddBoxIcon />
-              </IconButton>
-            </InputAdornment>
-          ),
-        }}
+        // InputProps={{
+        //   endAdornment: (
+        //     <InputAdornment position="end">
+        //       <IconButton
+        //         aria-label="toggle password visibility"
+        //         onClick={onAdd}
+        //       >
+        //         <AddBoxIcon />
+        //       </IconButton>
+        //     </InputAdornment>
+        //   ),
+        // }}
       ></TextField>
-      {participants.map((participant, index) => (
+      {/* {participants.map((participant, index) => (
         <Chip
           key={index}
           label={participant}
@@ -98,15 +122,14 @@ export default function NewConversation(props) {
           avatar={<Avatar>{participant.charAt(0).toUpperCase()}</Avatar>}
           className={classes.chip}
         />
-      ))}
-      <br />
+      ))} */}
+      {/* <br /> */}
       <Button
         disabled={!validateForm()}
         variant="contained"
         type="submit"
         fullWidth
         color="primary"
-        onClick={handleSubmit}
       >
         Create
       </Button>

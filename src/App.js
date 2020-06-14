@@ -94,7 +94,7 @@ function App(props) {
                   true,
                   "HS256"
                 );
-                console.log(userData, data, userData.uid !== data.username);
+                // console.log(userData, data, userData.uid !== data.username);
                 if (userData.uid !== data.username)
                   localStorage.removeItem("TALK2ME_TOKEN");
               } else {
@@ -152,6 +152,11 @@ function App(props) {
           component={NewConversation}
           {...childProps}
         ></PrivateRoute>
+        {/* <PrivateRoute
+          path="/room/:id"
+          component={PersonalRoom}
+          {...childProps}
+        ></PrivateRoute> */}
 
         {/* ##### PUBLIC ROUTE ##### */}
         <PublicRoute
