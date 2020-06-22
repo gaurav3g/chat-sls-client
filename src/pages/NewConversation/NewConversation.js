@@ -44,27 +44,14 @@ export default function NewConversation(props) {
         method: "POST",
         body: JSON.stringify({
           action: "setConversation",
-          token: localStorage.getItem("TALK2ME_TOKEN"),
           participant: participant,
         }),
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "t2m-authtoken": localStorage.getItem("TALK2ME_ACCESS_TOKEN"),
+        },
       }
     )
-      // Axios.post(
-      //   "https://600a8owvjh.execute-api.ap-south-1.amazonaws.com/dev/set-conversation",
-      //   {
-      //     action: "setConversation",
-      //     token: localStorage.getItem("TALK2ME_TOKEN"),
-      //     participant: participant,
-      //   }
-      //   // {
-      //   //   headers: {
-      //   //     "Access-Control-Allow-Headers": "*",
-      //   //     "Content-Type": "application/json",
-      //   //   },
-      //   //   crossdomain: true,
-      //   // }
-      // )
       .then((resp) => console.log(resp))
       .catch((err) => console.log(err));
 

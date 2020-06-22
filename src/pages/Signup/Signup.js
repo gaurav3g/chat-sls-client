@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import jwt from "jwt-simple";
+// import jwt from "jwt-simple";
 import { Link } from "react-router-dom";
 import { Auth } from "aws-amplify";
 import TextField from "@material-ui/core/TextField";
@@ -13,6 +13,9 @@ import FormLabel from "@material-ui/core/FormLabel";
 
 // layout
 import LoginLayout from "../../layouts/LoginLayout";
+
+// helper
+import generateJWT from "../../helpers/generateJWT";
 
 export default class SignUp extends Component {
   constructor(props) {
@@ -82,15 +85,11 @@ export default class SignUp extends Component {
     try {
       await Auth.confirmSignUp(this.state.email, this.state.confirmationCode);
       Auth.signIn(this.state.email, this.state.password).then((data) => {
-        const token = jwt.encode(
-          {
-            uid: data.username,
-            email: data.attributes.email,
-            username: data.attributes.preferred_username,
-          },
-          process.env.REACT_APP_API_SECRET,
-          "HS256"
-        );
+        const token = generateJWT({
+          uid: data.username,
+          email: data.attributes.email,
+          username: data.attributes.preferred_username,
+        });
         localStorage.setItem("TALK2ME_TOKEN", token);
         this.props.setAuthenticated(true);
         this.props.history.push("/chat");

@@ -80,40 +80,43 @@ function App(props) {
   useEffect(() => {
     async function authenticateFunction() {
       try {
-        if (await Auth.currentSession()) {
-          setAuthenticated(true);
-          Auth.currentUserInfo()
-            .then((data) => {
-              if (
-                localStorage.getItem("TALK2ME_TOKEN") &&
-                localStorage.getItem("TALK2ME_TOKEN") !== ""
-              ) {
-                const userData = jwt.decode(
-                  localStorage.getItem("TALK2ME_TOKEN"),
-                  process.env.REACT_APP_API_SECRET,
-                  true,
-                  "HS256"
-                );
-                // console.log(userData, data, userData.uid !== data.username);
-                if (userData.uid !== data.username)
-                  localStorage.removeItem("TALK2ME_TOKEN");
-              } else {
-                const token = jwt.encode(
-                  {
-                    uid: data.username,
-                    email: data.attributes.email,
-                    username: data.attributes.preferred_username,
-                  },
-                  process.env.REACT_APP_API_SECRET,
-                  "HS256"
-                );
-                localStorage.setItem("TALK2ME_TOKEN", token);
-              }
-            })
-            .catch((err) => console.log(err));
-        } else {
-          localStorage.removeItem("TALK2ME_TOKEN");
-        }
+        Auth.currentSession()
+          .then((res) => {
+            let accessToken = res.getAccessToken();
+            let jwt = accessToken.getJwtToken();
+            localStorage.setItem("TALK2ME_ACCESS_TOKEN", jwt);
+            setAuthenticated(true);
+            Auth.currentUserInfo()
+              .then((data) => {
+                if (
+                  localStorage.getItem("TALK2ME_TOKEN") &&
+                  localStorage.getItem("TALK2ME_TOKEN") !== ""
+                ) {
+                  const userData = jwt.decode(
+                    localStorage.getItem("TALK2ME_TOKEN"),
+                    process.env.REACT_APP_API_SECRET,
+                    true,
+                    "HS256"
+                  );
+                  // console.log(userData, data, userData.uid !== data.username);
+                  if (userData.uid !== data.username)
+                    localStorage.removeItem("TALK2ME_TOKEN");
+                } else {
+                  const token = jwt.encode(
+                    {
+                      uid: data.username,
+                      email: data.attributes.email,
+                      username: data.attributes.preferred_username,
+                    },
+                    process.env.REACT_APP_API_SECRET,
+                    "HS256"
+                  );
+                  localStorage.setItem("TALK2ME_TOKEN", token);
+                }
+              })
+              .catch((err) => console.log(err));
+          })
+          .catch((err) => localStorage.removeItem("TALK2ME_TOKEN"));
       } catch (e) {
         if (e !== "No current user") {
           localStorage.removeItem("TALK2ME_TOKEN");

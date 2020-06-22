@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import ChatLayout from "../layouts/ChatLayout";
 
 const Chat = (props) => {
   const { client } = props;
@@ -10,16 +11,13 @@ const Chat = (props) => {
     setNewMsg(event.target.value);
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  const handleSubmit = (message) => {
     const data = {
       action: "sendMessage",
       token: localStorage.getItem("TALK2ME_TOKEN"),
-      content: newMsg,
+      content: message,
     };
     client.send(JSON.stringify(data));
-    // console.log("enter");
-    setNewMsg("");
   };
 
   useEffect(() => {
@@ -38,7 +36,7 @@ const Chat = (props) => {
   }, [client, messageList]);
 
   return (
-    <div>
+    <ChatLayout title={"Universe"} submitHandler={handleSubmit}>
       {messageList.length ? (
         messageList.map((message, index) => (
           <div key={index}>
@@ -48,20 +46,7 @@ const Chat = (props) => {
       ) : (
         <div>No messages</div>
       )}
-      <form
-        style={{ position: "fixed", width: "100%", bottom: 0 }}
-        onSubmit={handleSubmit}
-      >
-        <input
-          placeholder="Enter text here"
-          name="message"
-          type="text"
-          onChange={handleChange}
-          value={newMsg}
-        ></input>
-        <button type="submit">Send Message</button>
-      </form>
-    </div>
+    </ChatLayout>
   );
 };
 
