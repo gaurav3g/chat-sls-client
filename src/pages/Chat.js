@@ -4,12 +4,12 @@ import ChatLayout from "../layouts/ChatLayout";
 const Chat = (props) => {
   const { client } = props;
   const [messageList, setMessageList] = useState([]);
-  const [newMsg, setNewMsg] = useState("");
+  // const [newMsg, setNewMsg] = useState("");
   // const [client, setClient] = useState(null);
 
-  const handleChange = (event) => {
-    setNewMsg(event.target.value);
-  };
+  // const handleChange = (event) => {
+  //   setNewMsg(event.target.value);
+  // };
 
   const handleSubmit = (message) => {
     const data = {
