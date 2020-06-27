@@ -53,6 +53,9 @@ const useStyles = makeStyles((theme = theme) => ({
       // borderRadius: 20,
       marginLeft: 5,
       backgroundColor: theme.palette.primary.main,
+      "&:focus": {
+        backgroundColor: theme.palette.primary.main,
+      },
     },
   },
   chatSection: {
@@ -132,6 +135,7 @@ export default function ChatLayout(props) {
           onChange={handleChange}
           placeholder={"Enter text here"}
           inputProps={{ autoComplete: "off" }}
+          disableRipple
         ></TextField>
         <IconButton
           variant="contained"
