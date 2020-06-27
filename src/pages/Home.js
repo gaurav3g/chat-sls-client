@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import {
   TextField,
@@ -6,11 +6,22 @@ import {
   Typography,
   Grid,
   Container,
+  SvgIcon,
+  List,
+  ListItemText,
+  ListItem,
+  Hidden,
 } from "@material-ui/core";
+import InputAdornment from "@material-ui/core/InputAdornment";
+import CloseIcon from "@material-ui/icons/Close";
 import Chat from "./Chat";
-import generateJWT from "../helpers/generateJWT";
+import HomeLayout from "./../layouts/HomeLayout";
+import PageLoader from "./../components/PageLoader";
+import generateJWT from "../helpers/token/generateJWT";
+import decodeJWT from "../helpers/token/decodeJWT";
+import { w3cwebsocket as W3CWebSocket } from "websocket";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((theme = theme) => ({
   form: {
     marginBottom: 15,
     display: "flex",
@@ -30,6 +41,9 @@ const useStyles = makeStyles((theme) => ({
     },
     "& .t2m-home-input": {
       textAlign: "right",
+      "& input": {
+        color: theme.palette.secondary.main,
+      },
     },
     "& .t2m-home-button": {
       textAlign: "left",
@@ -39,30 +53,82 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Home() {
   const classes = useStyles();
-  const [username, setUsername] = useState(
-    localStorage.getItem("TALK2ME_TOKEN") || ""
+  const [formData, setFormData] = useState({
+    username: {
+      value:
+        decodeJWT(localStorage.getItem("TALK2ME_TEMP_TOKEN")).username || "",
+      error: false,
+      touched: false,
+    },
+  });
+  const [guestAuthenticated, setGuestAuthenticated] = useState(
+    decodeJWT(localStorage.getItem("TALK2ME_TEMP_TOKEN")) ? true : false
   );
+  const [loading, setLoading] = useState(false);
+  const [client, setclient] = useState(null);
 
   const handleChange = (event) => {
     const userN = event.target.value;
-    setUsername(userN);
+    setFormData({
+      username: { error: false, value: userN, touched: false },
+    });
   };
+
+  useEffect(() => {
+    if (guestAuthenticated)
+      setclient(
+        new W3CWebSocket(
+          `${process.env.REACT_APP_WSS_APIURL}?token=${localStorage.getItem(
+            "TALK2ME_TEMP_TOKEN"
+          )}`
+        )
+      );
+  }, [guestAuthenticated]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const token = generateJWT({ username: username });
-    localStorage.setItem("TALK2ME_TOKEN", token);
+    setLoading(true);
+    const token = generateJWT({ username: formData.username.value });
+    fetch(
+      `${process.env.REACT_APP_REST_API_URL}/get-username?username=${formData.username.value}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "t2m-temptoken": token,
+        },
+      }
+    )
+      .then((resp) => {
+        console.log("SUCCESS", resp.status);
+        if (resp.status !== 200) {
+          setFormData({
+            username: { ...formData.username, touched: true, error: true },
+          });
+        } else {
+          setGuestAuthenticated(true);
+          localStorage.setItem("TALK2ME_TEMP_TOKEN", token);
+        }
+      })
+      .catch((err) => {
+        console.log("ERROR", err);
+      })
+      .finally(() => setLoading(false));
   };
 
-  const validateForm = () => {
-    return username.length > 0;
-  };
+  // const validateForm = () => {
+  //   return formData.username.value.length > 0;
+  // };
 
-  return localStorage.getItem("TALK2ME_TOKEN") &&
-    localStorage.getItem("TALK2ME_TOKEN") !== "" ? (
-    <Chat />
+  return guestAuthenticated &&
+    ((localStorage.getItem("TALK2ME_TOKEN") &&
+      localStorage.getItem("TALK2ME_TOKEN") !== "") ||
+      (localStorage.getItem("TALK2ME_TEMP_TOKEN") &&
+        localStorage.getItem("TALK2ME_TEMP_TOKEN") !== "")) ? (
+    <Chat client={client} />
   ) : (
-    <div>
+    <HomeLayout title="Talk2ME">
+      {loading && <PageLoader />}
       <Container>
         <Grid container>
           <Grid item lg={8} md={8} sm={12} xs={12}>
@@ -78,61 +144,122 @@ export default function Home() {
             </Typography>
           </Grid>
         </Grid>
-        <Grid container>
-          <Grid item lg={12} md={12} sm={12} xs={12}>
-            <Typography variant="h4" gutterBottom>
-              Common Chat Room Rules
-            </Typography>
-            <Typography variant="body1" gutterBottom>
-              We want our chat room friendly place so everyone can easily join
-              and meet up with Strangers.
-            </Typography>
-            <Typography variant="h6" gutterBottom>
-              Some Rules we have mentioned which you have to follow.
-            </Typography>
-            <Typography variant="body2" gutterBottom>
-              Money Laundering
-            </Typography>
-            <Typography variant="body2" gutterBottom>
-              Hush Money (Blackmailing)
-            </Typography>
-            <Typography variant="body2" gutterBottom>
-              No Aggressive Talks
-            </Typography>
-            <Typography variant="body2" gutterBottom>
-              Exhibitions and Sales conversation are not allowed
-            </Typography>
-            <Typography variant="body2" gutterBottom>
-              We don't allow to share awful Content ( i.e. Images, Gifs, Videos,
-              and URLs, etc )
-            </Typography>
+        <Hidden smDown>
+          <br />
+          <Grid container>
+            <Grid item lg={12} md={12} sm={12} xs={12}>
+              <Typography variant="h4" gutterBottom>
+                Common Chat Room Rules
+              </Typography>
+              <Typography variant="body1" gutterBottom>
+                We want our chat room friendly place so everyone can easily join
+                and meet up with Strangers.
+              </Typography>
+              <Typography variant="h6">
+                Some Rules we have mentioned which you have to follow.
+              </Typography>
+              <List dense>
+                <ListItem>
+                  <ListItemText>Money Laundering</ListItemText>
+                </ListItem>
+                <ListItem>
+                  <ListItemText>Money Laundering</ListItemText>
+                </ListItem>
+                <ListItem>
+                  <ListItemText>Hush Money (Blackmailing)</ListItemText>
+                </ListItem>
+                <ListItem>
+                  <ListItemText>No Aggressive Talks</ListItemText>
+                </ListItem>
+                <ListItem>
+                  <ListItemText>
+                    Exhibitions and Sales conversation are not allowed
+                  </ListItemText>
+                </ListItem>
+              </List>
+              <Typography variant="body2" gutterBottom>
+                We don't allow to share awful Content ( i.e. Images, Gifs,
+                Videos, and URLs, etc )
+              </Typography>
+            </Grid>
           </Grid>
-        </Grid>
+        </Hidden>
+        <br />
         <form onSubmit={handleSubmit} className={classes.form}>
           <TextField
             className="t2m-home-formfield t2m-home-input"
             label="Username"
             autoFocus
-            autoComplete={false}
             type="text"
             name="input"
             fullWidth
             margin="none"
             variant="outlined"
-            value={username}
+            value={formData.username.value}
             onChange={handleChange}
+            color="secondary"
+            inputProps={{ autoComplete: "off" }}
+            error={formData.username.touched && formData.username.error}
+            InputProps={{
+              endAdornment: formData.username.touched &&
+                formData.username.error && (
+                  <InputAdornment position="end">
+                    <SvgIcon component={CloseIcon} color={"error"} />
+                  </InputAdornment>
+                ),
+            }}
           ></TextField>
           <Button
             className="t2m-home-formfield t2m-home-button"
-            disabled={!validateForm()}
             variant="contained"
             type="submit"
             fullWidth
             color="primary"
           >
-            Enter to Chat Room
+            <Typography variant="button">Enter to Chat Room</Typography>
           </Button>
         </form>
+        <Hidden mdUp>
+          <br />
+          <Grid container>
+            <Grid item lg={12} md={12} sm={12} xs={12}>
+              <Typography variant="h4" gutterBottom>
+                Common Chat Room Rules
+              </Typography>
+              <Typography variant="body1" gutterBottom>
+                We want our chat room friendly place so everyone can easily join
+                and meet up with Strangers.
+              </Typography>
+              <Typography variant="h6">
+                Some Rules we have mentioned which you have to follow.
+              </Typography>
+              <List dense>
+                <ListItem>
+                  <ListItemText>Money Laundering</ListItemText>
+                </ListItem>
+                <ListItem>
+                  <ListItemText>Money Laundering</ListItemText>
+                </ListItem>
+                <ListItem>
+                  <ListItemText>Hush Money (Blackmailing)</ListItemText>
+                </ListItem>
+                <ListItem>
+                  <ListItemText>No Aggressive Talks</ListItemText>
+                </ListItem>
+                <ListItem>
+                  <ListItemText>
+                    Exhibitions and Sales conversation are not allowed
+                  </ListItemText>
+                </ListItem>
+              </List>
+              <Typography variant="body2" gutterBottom>
+                We don't allow to share awful Content ( i.e. Images, Gifs,
+                Videos, and URLs, etc )
+              </Typography>
+            </Grid>
+          </Grid>
+        </Hidden>
+        <br />
         <Grid container>
           <Grid item lg={12} md={12} sm={12} xs={12}>
             <Typography variant="h4" gutterBottom>
@@ -146,6 +273,6 @@ export default function Home() {
           </Grid>
         </Grid>
       </Container>
-    </div>
+    </HomeLayout>
   );
 }

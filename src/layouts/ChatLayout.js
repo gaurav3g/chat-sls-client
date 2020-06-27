@@ -1,20 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import TextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
-import Button from "@material-ui/core/Button";
-import Hidden from "@material-ui/core/Hidden";
-
 import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
-import Icon from "@material-ui/core/Icon";
+import SendIcon from "@material-ui/icons/Send";
 
-const useStyles = makeStyles((theme) => ({
+import { theme } from "./../theme";
+
+const useStyles = makeStyles((theme = theme) => ({
   root: {
+    display: "flex",
+    flexDirection: "column",
+    maxWidth: "100%",
+    maxHeight: "100vh",
+    backgroundColor: theme.palette.primary.light,
+  },
+  header: {
     flexGrow: 1,
     marginBottom: 10,
+    flexShrink: 0,
   },
   menuButton: {
     marginRight: theme.spacing(2),
@@ -24,27 +31,43 @@ const useStyles = makeStyles((theme) => ({
   },
   baseLine: {
     display: "flex",
-    position: "fixed",
-    bottom: 0,
-    width: "100%",
+    // position: "fixed",
+    // bottom: 0,
+    margin: 5,
+    flexShrink: 0,
     "& > div": {
       width: "100%",
     },
+    "& fieldset": {
+      borderRadius: 40,
+    },
     "& input": {
       flexGrow: 1,
-      padding: theme.spacing(1.5, 2),
+      borderRadius: 40,
+      padding: theme.spacing(1.75, 2),
+      color: theme.palette.secondary.main,
+      backgroundColor: theme.palette.primary.main,
     },
     "& button": {
-      padding: theme.spacing(1, 2),
+      // padding: theme.spacing(1, 2),
+      // borderRadius: 20,
+      marginLeft: 5,
+      backgroundColor: theme.palette.primary.main,
     },
+  },
+  chatSection: {
+    flexGrow: 1,
+    height: "100%",
+    overflowY: "auto",
   },
 }));
 
 export default function ChatLayout(props) {
   const { title, submitHandler } = props;
   const classes = useStyles();
-
+  const [height, setHeight] = useState(0);
   const [message, setMessage] = useState("");
+  const [messagesEnd, setMessagesEnd] = useState(null);
 
   const handleChange = (event) => {
     setMessage(event.target.value);
@@ -56,9 +79,27 @@ export default function ChatLayout(props) {
     setMessage("");
   };
 
+  const updateWindowDimensions = () => {
+    setHeight(window.innerHeight);
+  };
+
+  useEffect(() => {
+    messagesEnd && messagesEnd.scrollIntoView();
+  });
+
+  useEffect(() => {
+    updateWindowDimensions();
+    window.addEventListener("resize", updateWindowDimensions);
+
+    // returned function will be called on component unmount
+    return () => {
+      window.removeEventListener("resize", updateWindowDimensions);
+    };
+  }, []);
+
   return (
-    <>
-      <AppBar className={classes.root} position="static">
+    <div className={classes.root} style={{ height: height }}>
+      <AppBar className={classes.header} position="static">
         <Toolbar>
           <IconButton
             edge="start"
@@ -73,7 +114,15 @@ export default function ChatLayout(props) {
           </Typography>
         </Toolbar>
       </AppBar>
-      {props.children}
+      <div className={classes.chatSection}>
+        {props.children}
+        <div
+          style={{ float: "left", clear: "both" }}
+          ref={(el) => {
+            setMessagesEnd(el);
+          }}
+        ></div>
+      </div>
       <form className={classes.baseLine} onSubmit={handleSubmit}>
         <TextField
           variant="outlined"
@@ -82,20 +131,17 @@ export default function ChatLayout(props) {
           value={message}
           onChange={handleChange}
           placeholder={"Enter text here"}
-          autoComplete={false}
+          inputProps={{ autoComplete: "off" }}
         ></TextField>
-        <Button
+        <IconButton
           variant="contained"
           type="submit"
           color="primary"
           className={classes.button}
         >
-          <Hidden smDown>Send</Hidden>
-          <Hidden mdUp>
-            <Icon>send</Icon>
-          </Hidden>
-        </Button>
+          <SendIcon color="secondary" />
+        </IconButton>
       </form>
-    </>
+    </div>
   );
 }

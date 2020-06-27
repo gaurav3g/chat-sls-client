@@ -15,7 +15,7 @@ import FormLabel from "@material-ui/core/FormLabel";
 import LoginLayout from "../../layouts/LoginLayout";
 
 // helper
-import generateJWT from "../../helpers/generateJWT";
+import generateJWT from "../../helpers/token/generateJWT";
 
 export default class SignUp extends Component {
   constructor(props) {

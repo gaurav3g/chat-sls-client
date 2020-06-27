@@ -6,8 +6,11 @@ import {
   Redirect,
 } from "react-router-dom";
 import { Auth } from "aws-amplify";
-import jwt from "jwt-simple";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
+
+import { makeStyles } from "@material-ui/core/styles";
+import theme from "./theme/index";
+import { ThemeProvider } from "@material-ui/styles";
 
 // components
 import Home from "./pages/Home";
@@ -16,6 +19,12 @@ import Signup from "./pages/Signup/Signup";
 import Signin from "./pages/Signin/Signin";
 import NoMatch from "./pages/NoMatch";
 import NewConversation from "./pages/NewConversation/NewConversation";
+
+const useStyles = makeStyles((theme = theme) => ({
+  root: {
+    backgroundColor: "#37474f",
+  },
+}));
 
 export function PublicRoute({ component: Component, ...rest }) {
   const { authenticated } = rest;
@@ -70,6 +79,7 @@ function PrivateRoute({ component: Component, ...rest }) {
 }
 
 function App(props) {
+  const classes = useStyles();
   const [authenticated, setAuthenticated] = useState(
     localStorage.getItem("TALK2ME_TOKEN") &&
       localStorage.getItem("TALK2ME_TOKEN") !== ""
@@ -140,42 +150,48 @@ function App(props) {
   };
 
   return (
-    <Router>
-      <Switch>
-        {/* ##### HOME ROUTE ##### */}
-        <Route exact path="/" component={Home}></Route>
-        {/* ##### PRIVATE ROUTE ##### */}
-        <PrivateRoute
-          path="/chat"
-          component={Chat}
-          {...childProps}
-        ></PrivateRoute>
-        <PrivateRoute
-          path="/new-conversation"
-          component={NewConversation}
-          {...childProps}
-        ></PrivateRoute>
-        {/* <PrivateRoute
+    <ThemeProvider theme={theme}>
+      <div className={classes.root}>
+        <Router>
+          <Switch>
+            {/* ##### HOME ROUTE ##### */}
+            <Route exact path="/" component={Home}></Route>
+
+            {/* ##### PUBLIC ROUTE ##### */}
+            <PublicRoute
+              path="/signup"
+              component={Signup}
+              {...childProps}
+            ></PublicRoute>
+            <PublicRoute
+              path="/signin"
+              component={Signin}
+              {...childProps}
+            ></PublicRoute>
+
+            {/* ##### PRIVATE ROUTE ##### */}
+            <PrivateRoute
+              path="/chat"
+              component={Chat}
+              {...childProps}
+            ></PrivateRoute>
+            <PrivateRoute
+              path="/new-conversation"
+              component={NewConversation}
+              {...childProps}
+            ></PrivateRoute>
+            {/* <PrivateRoute
           path="/room/:id"
           component={PersonalRoom}
           {...childProps}
         ></PrivateRoute> */}
 
-        {/* ##### PUBLIC ROUTE ##### */}
-        <PublicRoute
-          path="/signup"
-          component={Signup}
-          {...childProps}
-        ></PublicRoute>
-        <PublicRoute
-          path="/signin"
-          component={Signin}
-          {...childProps}
-        ></PublicRoute>
-        {/* ##### NOT FOUND ##### */}
-        <Route component={NoMatch}></Route>
-      </Switch>
-    </Router>
+            {/* ##### NOT FOUND ##### */}
+            <Route component={NoMatch}></Route>
+          </Switch>
+        </Router>
+      </div>
+    </ThemeProvider>
   );
 }
 

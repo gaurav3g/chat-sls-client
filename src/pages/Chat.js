@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import ChatLayout from "../layouts/ChatLayout";
+import Block from "../components/Chat/Block";
+
+import validateInput from "./../helpers/message/validateInput";
 
 const Chat = (props) => {
   const { client } = props;
@@ -12,19 +15,21 @@ const Chat = (props) => {
   // };
 
   const handleSubmit = (message) => {
-    const data = {
-      action: "sendMessage",
-      token: localStorage.getItem("TALK2ME_TOKEN"),
-      content: message,
-    };
-    client.send(JSON.stringify(data));
+    if (message && message !== "" && validateInput(message)) {
+      const data = {
+        action: "sendMessage",
+        token: localStorage.getItem("TALK2ME_TEMP_TOKEN"),
+        content: message,
+      };
+      client.send(JSON.stringify(data));
+    }
   };
 
   useEffect(() => {
     if (client) {
       client.onopen = () => {
         // console.log("Socket is open!");
-        const data = { action: "getRecentMessages" };
+        const data = { action: "getRecentMessages", page: 1 };
         client.send(JSON.stringify(data));
       };
       client.onmessage = (message) => {
@@ -39,9 +44,9 @@ const Chat = (props) => {
     <ChatLayout title={"Universe"} submitHandler={handleSubmit}>
       {messageList.length ? (
         messageList.map((message, index) => (
-          <div key={index}>
-            <small>{message.username} :</small> {message.content}
-          </div>
+          <Block key={index} sender={message.username}>
+            {message.content}
+          </Block>
         ))
       ) : (
         <div>No messages</div>
