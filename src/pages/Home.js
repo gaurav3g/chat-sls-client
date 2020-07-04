@@ -21,7 +21,7 @@ import generateJWT from "../helpers/token/generateJWT";
 import decodeJWT from "../helpers/token/decodeJWT";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 
-const useStyles = makeStyles((theme = theme) => ({
+const useStyles = makeStyles((theme) => ({
   form: {
     marginBottom: 15,
     display: "flex",

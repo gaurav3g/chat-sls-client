@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -7,20 +7,27 @@ import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
 import SendIcon from "@material-ui/icons/Send";
+import Block from "../components/Chat/Block";
 
-import { theme } from "./../theme";
+// import { theme } from "./../theme";
+import { CircularProgress } from "@material-ui/core";
+import segregator from "../helpers/chat/segregator";
 
-const useStyles = makeStyles((theme = theme) => ({
+// hooks
+import { usePrevious } from "../helpers/hooks/hooks";
+import Loader from "../components/Chat/Loader";
+
+const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",
     flexDirection: "column",
     maxWidth: "100%",
     maxHeight: "100vh",
-    backgroundColor: theme.palette.primary.light,
+    backgroundColor: theme.palette.primary.dark,
   },
   header: {
     flexGrow: 1,
-    marginBottom: 10,
+    // marginBottom: 10,
     flexShrink: 0,
   },
   menuButton: {
@@ -33,7 +40,7 @@ const useStyles = makeStyles((theme = theme) => ({
     display: "flex",
     // position: "fixed",
     // bottom: 0,
-    margin: 5,
+    margin: theme.spacing(0.5),
     flexShrink: 0,
     "& > div": {
       width: "100%",
@@ -62,16 +69,42 @@ const useStyles = makeStyles((theme = theme) => ({
     flexGrow: 1,
     height: "100%",
     overflowY: "auto",
+    marginTop: theme.spacing(0.5),
+  },
+  dateBadge: {
+    display: "flex",
+    padding: theme.spacing(1),
+    justifyContent: "center",
+    "& > *": {
+      borderRadius: 40,
+      backgroundColor: theme.palette.secondary.main,
+      padding: theme.spacing(0, 1),
+      color: theme.palette.secondary.contrastText,
+    },
   },
 }));
 
 export default function ChatLayout(props) {
-  const { title, submitHandler } = props;
+  const {
+    title,
+    submitHandler,
+    loadmoreHandler,
+    appendAtEnd,
+    messages,
+    noMore,
+  } = props;
+
+  // init variables
   const classes = useStyles();
   const [height, setHeight] = useState(0);
   const [message, setMessage] = useState("");
-  const [messagesEnd, setMessagesEnd] = useState(null);
+  const [chatWindow, setChatWindow] = useState(null);
+  // const [messagesEnd, setMessagesEnd] = useState(null);
+  const [segregatedList, setSegregatedList] = useState({});
 
+  const prevList = usePrevious(messages);
+
+  // functions
   const handleChange = (event) => {
     setMessage(event.target.value);
   };
@@ -79,16 +112,60 @@ export default function ChatLayout(props) {
   const handleSubmit = (event) => {
     event.preventDefault();
     submitHandler(message);
+    // messagesEnd && messagesEnd.scrollIntoView();
     setMessage("");
+  };
+
+  const handleLoadmore = (event) => {
+    if (loadmoreHandler) loadmoreHandler();
   };
 
   const updateWindowDimensions = () => {
     setHeight(window.innerHeight);
   };
 
+  function handleScroll() {
+    if (
+      !noMore &&
+      chatWindow &&
+      messages.length >= 20 &&
+      chatWindow.scrollTop < 10
+    ) {
+      console.log("Fetch more list items!");
+      handleLoadmore();
+    }
+  }
+
+  // Effects
+
   useEffect(() => {
-    messagesEnd && messagesEnd.scrollIntoView();
-  });
+    if (messages) setSegregatedList(segregator(messages));
+
+    if (chatWindow && messages.length) {
+      if (!prevList.length || appendAtEnd) {
+        // scroll down of first time load
+        setTimeout(() => {
+          chatWindow.scrollTop = chatWindow.scrollHeight;
+        }, 50);
+      } else if (
+        prevList.length &&
+        prevList[0].created_at !== messages[0].created_at
+      ) {
+        // for every scroll-up load more
+        const heightBeforeRender = chatWindow.scrollHeight;
+        setTimeout(() => {
+          chatWindow.scrollTop = chatWindow.scrollHeight - heightBeforeRender;
+        }, 1);
+      }
+    }
+  }, [appendAtEnd, chatWindow, messages, prevList]);
+
+  // useEffect(() => {
+  //   if (appendAtEnd && messagesEnd) {
+  //     console.log("end scroll");
+  //     messagesEnd.scrollIntoView();
+  //   }
+  // }, [messagesEnd, appendAtEnd, segregatedList]);
 
   useEffect(() => {
     updateWindowDimensions();
@@ -117,14 +194,39 @@ export default function ChatLayout(props) {
           </Typography>
         </Toolbar>
       </AppBar>
-      <div className={classes.chatSection}>
-        {props.children}
-        <div
+      <div
+        className={classes.chatSection}
+        ref={(el) => {
+          setChatWindow(el);
+        }}
+        onScroll={handleScroll}
+      >
+        {!noMore && <Loader />}
+        {messages.length
+          ? Object.keys(segregatedList).map((key, index) => (
+              <div key={index}>
+                {/* <div className={classes.dateBadge}>
+                <Typography variant="body1">{key}</Typography>
+              </div> */}
+                {segregatedList[key].map((message, messageIndex) => (
+                  <Block
+                    key={messageIndex}
+                    id={`msg${message.created_at}`}
+                    sender={message.sender}
+                    createdAt={message.created_at}
+                  >
+                    {message.content}
+                  </Block>
+                ))}
+              </div>
+            ))
+          : null}
+        {/* <div
           style={{ float: "left", clear: "both" }}
           ref={(el) => {
             setMessagesEnd(el);
           }}
-        ></div>
+        ></div> */}
       </div>
       <form className={classes.baseLine} onSubmit={handleSubmit}>
         <TextField
@@ -135,13 +237,13 @@ export default function ChatLayout(props) {
           onChange={handleChange}
           placeholder={"Enter text here"}
           inputProps={{ autoComplete: "off" }}
-          disableRipple
         ></TextField>
         <IconButton
           variant="contained"
           type="submit"
           color="primary"
           className={classes.button}
+          disableRipple
         >
           <SendIcon color="secondary" />
         </IconButton>

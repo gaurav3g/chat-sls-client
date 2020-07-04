@@ -4,19 +4,19 @@
 /* npm */
 
 // styles
-import { Color } from "@material-ui/core";
+// import { Color } from "@material-ui/core";
 import * as colors from "@material-ui/core/colors";
-import {
-  Palette as MuiPalette,
-  PaletteColor,
-  PaletteOptions as MuiPaletteOptions,
-  ColorPartial,
-  SimplePaletteColorOptions,
-  TypeText,
-} from "@material-ui/core/styles/createPalette";
+// import {
+//   Palette as MuiPalette,
+//   PaletteColor,
+//   PaletteOptions as MuiPaletteOptions,
+//   ColorPartial,
+//   SimplePaletteColorOptions,
+//   TypeText,
+// } from "@material-ui/core/styles/createPalette";
 
 // utils
-import _ from "lodash";
+// import _ from "lodash";
 import deepmerge from "deepmerge";
 
 // ----------------------------------------------------------------------------
@@ -32,7 +32,7 @@ export const EXPERIENCE_COLORS = [
   "info",
 ];
 
-export const white = "#fff8e1";
+export const white = "#ffffff";
 
 // ----------------------------------------------------------------------------
 
@@ -41,13 +41,25 @@ const palette_options = {
     contrastText: white,
     dark: "#000a12",
     main: "#263238",
-    light: "#37474f",
+    light: "#4f5b62",
+    // dark: "#1b0000",
+    // main: "#3e2723",
+    // light: "#6a4f4b"
   },
   secondary: {
     contrastText: white,
-    dark: "#c56000",
-    main: "#ff8f00",
-    light: "#ffc046",
+    dark: "#babdbe",
+    main: "#eceff1",
+    light: "#ffffff",
+    // dark: "#c2b700",
+    // main: "#f9e935",
+    // light: "#ffff6d",
+  },
+  tertiary: {
+    contrastText: white,
+    dark: "#6b4b43",
+    main: "#9a776e",
+    light: "#cca69c",
   },
   error: {
     contrastText: white,
@@ -55,6 +67,18 @@ const palette_options = {
     main: colors.red[600],
     light: colors.red[400],
   },
+  headingColor: [
+    colors.red[500],
+    colors.pink[500],
+    colors.purple[500],
+    colors.indigo[500],
+    colors.lightBlue[500],
+    colors.cyan[500],
+    colors.green[500],
+    colors.lime[500],
+    colors.amber[500],
+    colors.deepOrange[500],
+  ],
   text: {
     primary: colors.blueGrey[900],
     secondary: colors.blueGrey[600],

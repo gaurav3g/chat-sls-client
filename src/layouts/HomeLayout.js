@@ -4,13 +4,13 @@ import { Link } from "react-router-dom";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
-import Button from "@material-ui/core/Button";
+// import Button from "@material-ui/core/Button";
 import Hidden from "@material-ui/core/Hidden";
 import Drawer from "@material-ui/core/Drawer";
 
 import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
-import Icon from "@material-ui/core/Icon";
+// import Icon from "@material-ui/core/Icon";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 

@@ -11,7 +11,7 @@ import createMuiTheme, {
 /* local */
 
 // theme
-import palette, { extendPalette, Palette } from "./palette";
+import palette, { extendPalette } from "./palette";
 import typography from "./typography";
 // import overrides from "./overrides";
 

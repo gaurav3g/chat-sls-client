@@ -1,18 +1,15 @@
 import React, { useState, useEffect } from "react";
 import ChatLayout from "../layouts/ChatLayout";
-import Block from "../components/Chat/Block";
 
 import validateInput from "./../helpers/message/validateInput";
 
 const Chat = (props) => {
   const { client } = props;
   const [messageList, setMessageList] = useState([]);
-  // const [newMsg, setNewMsg] = useState("");
-  // const [client, setClient] = useState(null);
-
-  // const handleChange = (event) => {
-  //   setNewMsg(event.target.value);
-  // };
+  const [lastStartKey, setLastStartKey] = useState(null);
+  const [startKey, setStartKey] = useState(null);
+  const [appendAtEnd, setAppendAtEnd] = useState(false);
+  const [page, setPage] = useState(0);
 
   const handleSubmit = (message) => {
     if (message && message !== "" && validateInput(message)) {
@@ -25,33 +22,67 @@ const Chat = (props) => {
     }
   };
 
+  const handleLoadmore = () => {
+    if (
+      startKey &&
+      startKey >= 0 &&
+      (!lastStartKey || startKey < lastStartKey)
+    ) {
+      console.log("SEND REQ");
+      const data = {
+        action: "getRecentMessages",
+        LastEvaluatedKey: startKey,
+      };
+      client.send(JSON.stringify(data));
+      setLastStartKey(startKey);
+    }
+  };
+
   useEffect(() => {
     if (client) {
       client.onopen = () => {
-        // console.log("Socket is open!");
-        const data = { action: "getRecentMessages", page: 1 };
+        const data = {
+          action: "getRecentMessages",
+          // LastEvaluatedKey: startKey,
+        };
         client.send(JSON.stringify(data));
+        // setAppendAtEnd(true);
       };
       client.onmessage = (message) => {
         const messages = JSON.parse(message.data);
-        setMessageList([...messageList, ...messages.messages]);
+        if (startKey === null || startKey >= 0)
+          if (messages.LastEvaluatedKey) {
+            setPage((prevState) => prevState + 1);
+            setStartKey(messages.LastEvaluatedKey);
+          } else if (startKey !== null) setStartKey(-1);
+
+        if (messages.messages) {
+          setAppendAtEnd(messages.end || page < 2 ? true : false);
+          if (messages.end)
+            setMessageList([...messageList, ...messages.messages]);
+          else setMessageList([...messages.messages, ...messageList]);
+        }
+
         // console.log(messages);
       };
     }
-  }, [client, messageList]);
+  }, [client, messageList, page, startKey]);
+
+  useEffect(() => {
+    if (page === 1 && messageList.length === 20) {
+      setAppendAtEnd(false);
+    }
+  }, [messageList, page]);
 
   return (
-    <ChatLayout title={"Universe"} submitHandler={handleSubmit}>
-      {messageList.length ? (
-        messageList.map((message, index) => (
-          <Block key={index} sender={message.username}>
-            {message.content}
-          </Block>
-        ))
-      ) : (
-        <div>No messages</div>
-      )}
-    </ChatLayout>
+    <ChatLayout
+      title={"Universe"}
+      submitHandler={handleSubmit}
+      loadmoreHandler={handleLoadmore}
+      appendAtEnd={appendAtEnd}
+      messages={messageList}
+      noMore={startKey <= -1}
+    />
   );
 };
 

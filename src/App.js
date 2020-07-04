@@ -20,7 +20,7 @@ import Signin from "./pages/Signin/Signin";
 import NoMatch from "./pages/NoMatch";
 import NewConversation from "./pages/NewConversation/NewConversation";
 
-const useStyles = makeStyles((theme = theme) => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     backgroundColor: "#37474f",
   },
