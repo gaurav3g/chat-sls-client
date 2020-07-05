@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { RootContext } from "./store/Provider";
 import {
   Route,
   BrowserRouter as Router,
@@ -11,7 +12,6 @@ import { w3cwebsocket as W3CWebSocket } from "websocket";
 import { makeStyles } from "@material-ui/core/styles";
 import theme from "./theme/index";
 import { ThemeProvider } from "@material-ui/styles";
-import { ContextProvider } from "./store/Provider";
 
 // components
 import Home from "./pages/Home";
@@ -81,6 +81,7 @@ function PrivateRoute({ component: Component, ...rest }) {
 
 function App(props) {
   const classes = useStyles();
+  const context = useContext(RootContext);
   const [authenticated, setAuthenticated] = useState(
     localStorage.getItem("TALK2ME_TOKEN") &&
       localStorage.getItem("TALK2ME_TOKEN") !== ""
@@ -138,63 +139,62 @@ function App(props) {
     authenticateFunction();
   }, []);
 
-  const handleLogout = async (event) => {
-    await Auth.signOut();
+  // const handleLogout = async (event) => {
+  //   await Auth.signOut();
 
-    setAuthenticated(false);
-    props.history.push("/login");
-  };
+  //   setAuthenticated(false);
+  //   props.history.push("/login");
+  // };
 
   const childProps = {
     authenticated,
     setAuthenticated,
   };
+  console.log(context);
 
   return (
-    <ContextProvider>
-      <ThemeProvider theme={theme}>
-        <div className={classes.root}>
-          <Router>
-            <Switch>
-              {/* ##### HOME ROUTE ##### */}
-              <Route exact path="/" component={Home}></Route>
+    <ThemeProvider theme={theme}>
+      <div className={classes.root}>
+        <Router>
+          <Switch>
+            {/* ##### HOME ROUTE ##### */}
+            <Route exact path="/" component={Home}></Route>
 
-              {/* ##### PUBLIC ROUTE ##### */}
-              <PublicRoute
-                path="/signup"
-                component={Signup}
-                {...childProps}
-              ></PublicRoute>
-              <PublicRoute
-                path="/signin"
-                component={Signin}
-                {...childProps}
-              ></PublicRoute>
+            {/* ##### PUBLIC ROUTE ##### */}
+            <PublicRoute
+              path="/signup"
+              component={Signup}
+              {...childProps}
+            ></PublicRoute>
+            <PublicRoute
+              path="/signin"
+              component={Signin}
+              {...childProps}
+            ></PublicRoute>
 
-              {/* ##### PRIVATE ROUTE ##### */}
-              <PrivateRoute
-                path="/chat"
-                component={Chat}
-                {...childProps}
-              ></PrivateRoute>
-              <PrivateRoute
-                path="/new-conversation"
-                component={NewConversation}
-                {...childProps}
-              ></PrivateRoute>
-              {/* <PrivateRoute
+            {/* ##### PRIVATE ROUTE ##### */}
+            <PrivateRoute
+              path="/chat"
+              component={Chat}
+              {...childProps}
+            ></PrivateRoute>
+            <PrivateRoute
+              path="/new-conversation"
+              component={NewConversation}
+              {...childProps}
+            ></PrivateRoute>
+            {/* <PrivateRoute
           path="/room/:id"
           component={PersonalRoom}
           {...childProps}
         ></PrivateRoute> */}
 
-              {/* ##### NOT FOUND ##### */}
-              <Route component={NoMatch}></Route>
-            </Switch>
-          </Router>
-        </div>
-      </ThemeProvider>
-    </ContextProvider>
+            {/* ##### NOT FOUND ##### */}
+            <Route component={NoMatch}></Route>
+          </Switch>
+        </Router>
+      </div>
+    </ThemeProvider>
   );
 }
 

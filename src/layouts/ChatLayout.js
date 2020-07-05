@@ -96,7 +96,7 @@ export default function ChatLayout(props) {
   } = props;
 
   // init variables
-  const context = useContext(RootContext);
+  // const context = useContext(RootContext);
   const classes = useStyles();
   const [height, setHeight] = useState(0);
   const [message, setMessage] = useState("");

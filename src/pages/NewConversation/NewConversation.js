@@ -19,8 +19,8 @@ const useStyles = makeStyles(() =>
 );
 
 export default function NewConversation(props) {
-  const { client } = props;
-  const classes = useStyles();
+  // const { client } = props;
+  // const classes = useStyles();
 
   // const [input, setInput] = useState("");
   const [participant, setParticipant] = useState([]);
