@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext } from "react";
-import { RootContext } from "./../store/Provider";
+import React, { useState, useEffect } from "react";
+// import { RootContext } from "./../store/Provider";
 
 import { makeStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
@@ -15,7 +15,7 @@ import Block from "../components/Chat/Block";
 import segregator from "../helpers/chat/segregator";
 
 // hooks
-import { usePrevious } from "../helpers/hooks/hooks";
+import { usePrevious } from "../hooks/hooks";
 import Loader from "../components/Chat/Loader";
 
 const useStyles = makeStyles((theme) => ({

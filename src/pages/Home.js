@@ -56,7 +56,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Home() {
   const classes = useStyles();
-  // const context = useContext(RootContext);
+  const context = useContext(RootContext);
   const [formData, setFormData] = useState({
     username: {
       value:

@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useEffect, useContext } from "react";
+import { useImmer } from "use-immer";
+
 import { RootContext } from "./store/Provider";
 import {
   Route,
@@ -7,7 +9,10 @@ import {
   Redirect,
 } from "react-router-dom";
 import { Auth } from "aws-amplify";
-import { w3cwebsocket as W3CWebSocket } from "websocket";
+
+import PrivateRoute from "./utils/routes/PrivateRoute";
+import PublicRoute from "./utils/routes/PublicRoute";
+import ProtectedRoute from "./utils/routes/ProtectedRoute";
 
 import { makeStyles } from "@material-ui/core/styles";
 import theme from "./theme/index";
@@ -27,67 +32,15 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export function PublicRoute({ component: Component, ...rest }) {
-  const { authenticated } = rest;
-  return (
-    <Route
-      {...rest}
-      render={(props) =>
-        authenticated === false ? (
-          <Component {...rest} {...props} />
-        ) : (
-          <Redirect {...rest} to="/chat" />
-        )
-      }
-    />
-  );
-}
-
-function PrivateRoute({ component: Component, ...rest }) {
-  const { authenticated } = rest;
-  const [client, setClient] = useState(null);
-
-  useEffect(() => {
-    if (
-      !client &&
-      localStorage.getItem("TALK2ME_TOKEN") &&
-      localStorage.getItem("TALK2ME_TOKEN") !== ""
-    ) {
-      setClient(
-        new W3CWebSocket(
-          `${process.env.REACT_APP_WSS_APIURL}?token=${localStorage.getItem(
-            "TALK2ME_TOKEN"
-          )}`
-        )
-      );
-    }
-  }, [client]);
-
-  return (
-    <Route
-      {...rest}
-      render={(props) =>
-        authenticated === true ? (
-          <Component {...props} client={client} />
-        ) : (
-          <Redirect
-            to={{ pathname: "/signin", state: { from: props.location } }}
-          />
-        )
-      }
-    />
-  );
-}
-
 function App(props) {
   const classes = useStyles();
   const context = useContext(RootContext);
-  const [authenticated, setAuthenticated] = useState(
-    localStorage.getItem("TALK2ME_TOKEN") &&
-      localStorage.getItem("TALK2ME_TOKEN") !== ""
-      ? true
-      : false
-  );
+  const [authUser, setAuthUser] = useImmer({
+    authenticated: false,
+    accessToken: "",
+    info: {},
+  });
+  const [client, setClient] = useImmer(null);
 
   useEffect(() => {
     async function authenticateFunction() {
@@ -96,35 +49,15 @@ function App(props) {
           .then((res) => {
             let accessToken = res.getAccessToken();
             let jwt = accessToken.getJwtToken();
-            localStorage.setItem("TALK2ME_ACCESS_TOKEN", jwt);
-            setAuthenticated(true);
             Auth.currentUserInfo()
               .then((data) => {
-                if (
-                  localStorage.getItem("TALK2ME_TOKEN") &&
-                  localStorage.getItem("TALK2ME_TOKEN") !== ""
-                ) {
-                  const userData = jwt.decode(
-                    localStorage.getItem("TALK2ME_TOKEN"),
-                    process.env.REACT_APP_API_SECRET,
-                    true,
-                    "HS256"
-                  );
-                  // console.log(userData, data, userData.uid !== data.username);
-                  if (userData.uid !== data.username)
-                    localStorage.removeItem("TALK2ME_TOKEN");
-                } else {
-                  const token = jwt.encode(
-                    {
-                      uid: data.username,
-                      email: data.attributes.email,
-                      username: data.attributes.preferred_username,
-                    },
-                    process.env.REACT_APP_API_SECRET,
-                    "HS256"
-                  );
-                  localStorage.setItem("TALK2ME_TOKEN", token);
-                }
+                console.log(data);
+                setAuthUser((draft) => {
+                  draft.accessToken = jwt;
+                  draft.authenticated = true;
+                  draft.info = data;
+                });
+                localStorage.removeItem("TALK2ME_TEMP_TOKEN");
               })
               .catch((err) => console.log(err));
           })
@@ -137,41 +70,32 @@ function App(props) {
       }
     }
     authenticateFunction();
-  }, []);
+  }, [setAuthUser, context.state.user]);
+
+  useEffect(() => {
+    if (context.state.user.accessToken !== authUser.accessToken)
+      context.dispatch({
+        type: "set",
+        value: { user: authUser },
+      });
+  }, [authUser, context]);
 
   // const handleLogout = async (event) => {
   //   await Auth.signOut();
-
   //   setAuthenticated(false);
   //   props.history.push("/login");
   // };
 
   const childProps = {
-    authenticated,
-    setAuthenticated,
+    client,
+    setClient,
   };
-  console.log(context);
 
   return (
     <ThemeProvider theme={theme}>
       <div className={classes.root}>
         <Router>
           <Switch>
-            {/* ##### HOME ROUTE ##### */}
-            <Route exact path="/" component={Home}></Route>
-
-            {/* ##### PUBLIC ROUTE ##### */}
-            <PublicRoute
-              path="/signup"
-              component={Signup}
-              {...childProps}
-            ></PublicRoute>
-            <PublicRoute
-              path="/signin"
-              component={Signin}
-              {...childProps}
-            ></PublicRoute>
-
             {/* ##### PRIVATE ROUTE ##### */}
             <PrivateRoute
               path="/chat"
@@ -188,6 +112,23 @@ function App(props) {
           component={PersonalRoom}
           {...childProps}
         ></PrivateRoute> */}
+
+            {/* ##### PUBLIC ROUTE ##### */}
+            <PublicRoute
+              path="/signup"
+              component={Signup}
+              {...childProps}
+            ></PublicRoute>
+            <PublicRoute
+              path="/signin"
+              component={Signin}
+              {...childProps}
+            ></PublicRoute>
+            <PublicRoute
+              path="/"
+              component={Home}
+              {...childProps}
+            ></PublicRoute>
 
             {/* ##### NOT FOUND ##### */}
             <Route component={NoMatch}></Route>
