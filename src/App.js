@@ -13,10 +13,12 @@ import { Auth } from "aws-amplify";
 import PrivateRoute from "./utils/routes/PrivateRoute";
 import PublicRoute from "./utils/routes/PublicRoute";
 import ProtectedRoute from "./utils/routes/ProtectedRoute";
+import decodeJWT from "./helpers/token/decodeJWT";
 
 import { makeStyles } from "@material-ui/core/styles";
 import theme from "./theme/index";
 import { ThemeProvider } from "@material-ui/styles";
+import Axios from "axios";
 
 // components
 import Home from "./pages/Home";
@@ -40,7 +42,58 @@ function App(props) {
     accessToken: "",
     info: {},
   });
-  const [client, setClient] = useImmer(null);
+
+  useEffect(() => {
+    if (
+      localStorage.getItem("t2m_accessToken") &&
+      localStorage.getItem("t2m_refreshToken") &&
+      localStorage.getItem("t2m_refreshToken") !== ""
+    ) {
+      // context.dispatch({
+      //   type: "set",
+      //   value: {
+      //     t2mToken: {
+      //       ...context.state.t2mToken,
+      //       tempToken: localStorage.getItem("t2m_tempToken"),
+      //       accessToken: localStorage.getItem("t2m_accessToken"),
+      //       refreshToken: localStorage.getItem("t2m_refreshToken"),
+      //     },
+      //   },
+      // });
+      const decodedToken = decodeJWT(localStorage.getItem("t2m_accessToken"));
+      if (decodedToken && decodedToken <= new Date().getTime())
+        Axios.post(
+          `${process.env.REACT_APP_REST_API_URL}/ws-auth`,
+          {
+            token: localStorage.getItem("t2m_refreshToken"),
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "t2m-temptoken": localStorage.getItem("t2m_tempToken"),
+            },
+          }
+        )
+          .then((response) => {
+            context.dispatch({
+              type: "set",
+              value: {
+                t2mToken: {
+                  ...context.state.t2mToken,
+                  accessToken: localStorage.getItem("t2m_accessToken"),
+                  refreshToken: localStorage.getItem("t2m_refreshToken"),
+                },
+              },
+            });
+            localStorage.setItem("t2m_accessToken", response.data.accessToken);
+            localStorage.setItem(
+              "t2m_refreshToken",
+              response.data.refreshToken
+            );
+          })
+          .catch((err) => console.log(err));
+    }
+  }, []);
 
   useEffect(() => {
     async function authenticateFunction() {
@@ -51,7 +104,6 @@ function App(props) {
             let jwt = accessToken.getJwtToken();
             Auth.currentUserInfo()
               .then((data) => {
-                console.log(data);
                 setAuthUser((draft) => {
                   draft.accessToken = jwt;
                   draft.authenticated = true;
@@ -86,10 +138,7 @@ function App(props) {
   //   props.history.push("/login");
   // };
 
-  const childProps = {
-    client,
-    setClient,
-  };
+  const childProps = {};
 
   return (
     <ThemeProvider theme={theme}>

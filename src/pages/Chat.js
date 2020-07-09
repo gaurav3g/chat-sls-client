@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import ChatLayout from "../layouts/ChatLayout";
+import { RootContext } from "./../store/Provider";
 
 import validateInput from "./../helpers/message/validateInput";
 
 const Chat = (props) => {
-  const { client } = props;
+  const context = useContext(RootContext);
+
+  const client = context.state.wsClient;
+
   const [messageList, setMessageList] = useState([]);
   const [lastStartKey, setLastStartKey] = useState(null);
   const [startKey, setStartKey] = useState(null);
@@ -15,7 +19,7 @@ const Chat = (props) => {
     if (message && message !== "" && validateInput(message)) {
       const data = {
         action: "sendMessage",
-        token: localStorage.getItem("TALK2ME_TEMP_TOKEN"),
+        token: localStorage.getItem("t2m_accessToken"),
         content: message,
       };
       client.send(JSON.stringify(data));

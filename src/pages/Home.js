@@ -66,7 +66,11 @@ export default function Home() {
     },
   });
   const [guestAuthenticated, setGuestAuthenticated] = useState(
-    decodeJWT(localStorage.getItem("TALK2ME_TEMP_TOKEN")) ? true : false
+    decodeJWT(localStorage.getItem("t2m_accessToken")) &&
+      decodeJWT(localStorage.getItem("t2m_accessToken")).exp >
+        new Date().getTime()
+      ? true
+      : false
   );
   const [loading, setLoading] = useState(false);
   const [client, setclient] = useState(null);
@@ -83,11 +87,39 @@ export default function Home() {
       setclient(
         new W3CWebSocket(
           `${process.env.REACT_APP_WSS_APIURL}?token=${localStorage.getItem(
-            "TALK2ME_TEMP_TOKEN"
+            "t2m_accessToken"
           )}`
         )
       );
   }, [guestAuthenticated]);
+
+  useEffect(() => {
+    if (client && context && !context.state.wsClient)
+      context.dispatch({
+        type: "set",
+        value: { wsClient: client },
+      });
+  }, [client, context]);
+
+  // const testSubmit = (event) => {
+  //   event.preventDefault();
+  //   Axios.post(
+  //     `${process.env.REACT_APP_REST_API_URL}/ws-auth`,
+  //     {
+  //       token:
+  //         "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1dWlkIjoiMWEzZDA0NGQtYzE1MS0xMWVhLTk4YjQtMmYwMzEyMWIyOTNhIiwidG9rZW4iOiJleUowZVhBaU9pSktWMVFpTENKaGJHY2lPaUpJVXpJMU5pSjkuZXlKbGVIQWlPakUxT1RReU5EQXdOallzSW1saGRDSTZNVFU1TkRJek5qUTJOaXdpZFhObGNtNWhiV1VpT2lKa1pXVndZV3hwTVRFaWZRLmpabWJDa2tqcUhxLWRvS21QNEFGcDZNTWNRWnZSdG5BUEJzTGVzNTdkUFUiLCJ1c2VybmFtZSI6ImRlZXBhbGkxMSJ9.RsMpmnUD55XpO1YebGL1oPQZTh5rqyCIA-U4A89IKLk",
+  //     },
+  //     {
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "t2m-temptoken":
+  //           "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6ImRlZXBhbGkxMSJ9.iCKxTq7qiIQcjFibrIT582RH2pca2O1i-4v9_DBiExA",
+  //       },
+  //     }
+  //   )
+  //     .then((resp) => console.log(resp))
+  //     .catch((err) => console.log(err));
+  // };
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -119,26 +151,39 @@ export default function Home() {
             }
           )
             .then((response) => {
-              setGuestAuthenticated(true);
-              localStorage.setItem("TALK2ME_TEMP_TOKEN", token);
+              // console.log(response.data);
+              localStorage.setItem("t2m_tempToken", token);
+              localStorage.setItem(
+                "t2m_userData",
+                JSON.stringify({
+                  preferred_username: response.data.Username,
+                })
+              );
+              localStorage.setItem(
+                "t2m_accessToken",
+                response.data.accessToken
+              );
+              localStorage.setItem(
+                "t2m_refreshToken",
+                response.data.refreshToken
+              );
+              setTimeout(() => {
+                setGuestAuthenticated(true);
+              }, 100);
             })
             .catch((err) => {
               setFormData({
                 username: { ...formData.username, touched: true, error: true },
               });
-            })
-            .finally(() => setLoading(false));
+            });
         }
       })
-      .catch((err) => console.log(err));
+      .catch((err) => console.log(err))
+      .finally(() => setLoading(false));
   };
 
-  return guestAuthenticated &&
-    ((localStorage.getItem("TALK2ME_TOKEN") &&
-      localStorage.getItem("TALK2ME_TOKEN") !== "") ||
-      (localStorage.getItem("TALK2ME_TEMP_TOKEN") &&
-        localStorage.getItem("TALK2ME_TEMP_TOKEN") !== "")) ? (
-    <Chat client={client} />
+  return guestAuthenticated ? (
+    <Chat />
   ) : (
     <HomeLayout title="Talk2ME">
       {loading && <PageLoader />}
@@ -198,6 +243,7 @@ export default function Home() {
           </Grid>
         </Hidden>
         <br />
+        {/* <form onSubmit={testSubmit} className={classes.form}> */}
         <form onSubmit={handleSubmit} className={classes.form}>
           <TextField
             className="t2m-home-formfield t2m-home-input"
