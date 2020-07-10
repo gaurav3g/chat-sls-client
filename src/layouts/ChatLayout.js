@@ -220,7 +220,6 @@ export default function ChatLayout(props) {
         }}
         onScroll={handleScroll}
       >
-        {console.log(segregatedList)}
         {!noMore && <Loader />}
         {messages.length
           ? Object.keys(segregatedList).map((key, index) => (
