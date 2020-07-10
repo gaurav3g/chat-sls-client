@@ -2,6 +2,7 @@ import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Typography, Avatar } from "@material-ui/core";
 import moment from "moment";
+import clsx from "clsx";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -9,10 +10,16 @@ const useStyles = makeStyles((theme) => ({
     // flexDirection: "column",
     padding: theme.spacing(0.5, 1),
   },
+  rootSelf: {
+    flexDirection: "row-reverse",
+  },
   shell: {
     maxWidth: "85%",
     minWidth: "15%",
     display: "flex",
+  },
+  shellSelf: {
+    flexDirection: "row-reverse",
   },
   block: {},
   head: {
@@ -21,6 +28,10 @@ const useStyles = makeStyles((theme) => ({
     borderTopLeftRadius: theme.spacing(0.25),
     borderRadius: theme.spacing(2.5),
     color: theme.palette.primary.contrastText,
+  },
+  headSelf: {
+    borderTopLeftRadius: theme.spacing(2.5),
+    borderTopRightRadius: theme.spacing(0.25),
   },
   sender: {
     fontWeight: 600,
@@ -31,6 +42,10 @@ const useStyles = makeStyles((theme) => ({
     marginRight: theme.spacing(1),
     width: theme.spacing(4),
     height: theme.spacing(4),
+  },
+  avatarSelf: {
+    marginRight: theme.spacing(0),
+    marginLeft: theme.spacing(1),
   },
   message: {
     lineHeight: 1.2,
@@ -44,7 +59,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Block(props) {
-  const { sender, createdAt, id } = props;
+  const { sender, createdAt, id, self } = props;
   const classes = useStyles({
     color: (sender.charCodeAt(0) + sender.charCodeAt(sender.length - 1)) % 10,
   });
@@ -52,13 +67,13 @@ export default function Block(props) {
   const timeStr = moment.unix(createdAt).format("hh:mm");
 
   return (
-    <div className={classes.root} id={id}>
-      <div className={classes.shell}>
-        <Avatar className={classes.avatar}>
+    <div className={clsx(classes.root, self && classes.rootSelf)} id={id}>
+      <div className={clsx(classes.shell, self && classes.shellSelf)}>
+        <Avatar className={clsx(classes.avatar, self && classes.avatarSelf)}>
           <Typography variant="body1">{sender.charAt(0)}</Typography>
         </Avatar>
         <div className={classes.block}>
-          <div className={classes.head}>
+          <div className={clsx(classes.head, self && classes.headSelf)}>
             <Typography variant="body2" className={classes.sender}>
               {sender}
             </Typography>

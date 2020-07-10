@@ -235,6 +235,13 @@ export default function ChatLayout(props) {
                     id={`msg${message.created_at}`}
                     sender={message.sender}
                     createdAt={message.created_at}
+                    self={
+                      localStorage.getItem("t2m_userData") &&
+                      JSON.parse(localStorage.getItem("t2m_userData"))
+                        .preferred_username === message.sender
+                        ? true
+                        : false
+                    }
                   >
                     {message.content}
                   </Block>

@@ -124,6 +124,13 @@ export default function Home() {
   const handleSubmit = (event) => {
     event.preventDefault();
     setLoading(true);
+    if (formData.username.value === "") {
+      setFormData({
+        username: { ...formData.username, touched: true, error: true },
+      });
+      setLoading(false);
+      return false;
+    }
     const token = generateJWT({ username: formData.username.value });
     Axios.get(
       `${process.env.REACT_APP_REST_API_URL}/find-username?username=${formData.username.value}`,
