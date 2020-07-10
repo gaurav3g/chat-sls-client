@@ -19,6 +19,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import theme from "./theme/index";
 import { ThemeProvider } from "@material-ui/styles";
 import Axios from "axios";
+import moment from "moment";
 
 // components
 import Home from "./pages/Home";
@@ -49,19 +50,8 @@ function App(props) {
       localStorage.getItem("t2m_refreshToken") &&
       localStorage.getItem("t2m_refreshToken") !== ""
     ) {
-      // context.dispatch({
-      //   type: "set",
-      //   value: {
-      //     t2mToken: {
-      //       ...context.state.t2mToken,
-      //       tempToken: localStorage.getItem("t2m_tempToken"),
-      //       accessToken: localStorage.getItem("t2m_accessToken"),
-      //       refreshToken: localStorage.getItem("t2m_refreshToken"),
-      //     },
-      //   },
-      // });
       const decodedToken = decodeJWT(localStorage.getItem("t2m_accessToken"));
-      if (decodedToken && decodedToken <= new Date().getTime())
+      if (decodedToken && decodedToken.exp <= moment().unix())
         Axios.post(
           `${process.env.REACT_APP_REST_API_URL}/ws-auth`,
           {

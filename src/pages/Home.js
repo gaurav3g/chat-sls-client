@@ -23,6 +23,7 @@ import generateJWT from "../helpers/token/generateJWT";
 import decodeJWT from "../helpers/token/decodeJWT";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import Axios from "axios";
+import moment from "moment";
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -67,8 +68,7 @@ export default function Home() {
   });
   const [guestAuthenticated, setGuestAuthenticated] = useState(
     decodeJWT(localStorage.getItem("t2m_accessToken")) &&
-      decodeJWT(localStorage.getItem("t2m_accessToken")).exp >
-        new Date().getTime()
+      decodeJWT(localStorage.getItem("t2m_accessToken")).exp > moment().unix()
       ? true
       : false
   );

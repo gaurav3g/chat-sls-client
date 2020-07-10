@@ -1,13 +1,13 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Typography, Avatar } from "@material-ui/core";
-import prependZero from "./../../helpers/chat/prependZero";
+import moment from "moment";
 
 const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",
     // flexDirection: "column",
-    padding: theme.spacing(1),
+    padding: theme.spacing(0.5, 1),
   },
   shell: {
     maxWidth: "85%",
@@ -49,10 +49,7 @@ export default function Block(props) {
     color: (sender.charCodeAt(0) + sender.charCodeAt(sender.length - 1)) % 10,
   });
 
-  const date = new Date(parseInt(createdAt));
-  const timeStr = `${prependZero(date.getHours())}:${prependZero(
-    date.getMinutes()
-  )}`;
+  const timeStr = moment.unix(createdAt).format("hh:mm");
 
   return (
     <div className={classes.root} id={id}>

@@ -3,6 +3,7 @@ import ChatLayout from "../layouts/ChatLayout";
 import { RootContext } from "./../store/Provider";
 
 import validateInput from "./../helpers/message/validateInput";
+import { size } from "lodash";
 
 const Chat = (props) => {
   const context = useContext(RootContext);
@@ -36,7 +37,7 @@ const Chat = (props) => {
       const data = {
         action: "getRecentMessages",
         LastEvaluatedKey: startKey,
-        limit: 20,
+        limit: 40,
       };
       client.send(JSON.stringify(data));
       setPage((prevState) => prevState + 1);
@@ -49,7 +50,7 @@ const Chat = (props) => {
       client.onopen = () => {
         const data = {
           action: "getRecentMessages",
-          limit: 20,
+          limit: 40,
         };
         client.send(JSON.stringify(data));
         // setAppendAtEnd(true);

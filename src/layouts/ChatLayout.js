@@ -74,12 +74,13 @@ const useStyles = makeStyles((theme) => ({
   },
   dateBadge: {
     display: "flex",
-    padding: theme.spacing(1),
+    padding: theme.spacing(0.5, 1),
     justifyContent: "center",
     "& > *": {
       borderRadius: 40,
-      backgroundColor: theme.palette.secondary.main,
-      padding: theme.spacing(0, 1),
+      backgroundColor: theme.palette.primary.main,
+      opacity: 0.8,
+      padding: theme.spacing(0.25, 1, 0),
       color: theme.palette.secondary.contrastText,
     },
   },
@@ -131,8 +132,8 @@ export default function ChatLayout(props) {
     if (
       !noMore &&
       chatWindow &&
-      messages.length >= 20 &&
-      chatWindow.scrollTop < 10
+      messages.length >= 40 &&
+      chatWindow.scrollTop < 100
     ) {
       // console.log("Fetch more list items!");
       handleLoadmore();
@@ -219,13 +220,16 @@ export default function ChatLayout(props) {
         }}
         onScroll={handleScroll}
       >
+        {console.log(segregatedList)}
         {!noMore && <Loader />}
         {messages.length
           ? Object.keys(segregatedList).map((key, index) => (
               <div key={index}>
-                {/* <div className={classes.dateBadge}>
-                <Typography variant="body1">{key}</Typography>
-              </div> */}
+                {(index > 0 || noMore) && (
+                  <div className={classes.dateBadge}>
+                    <Typography variant="body2">{key}</Typography>
+                  </div>
+                )}
                 {segregatedList[key].map((message, messageIndex) => (
                   <Block
                     key={messageIndex}
