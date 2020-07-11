@@ -51,7 +51,16 @@ function App(props) {
       localStorage.getItem("t2m_refreshToken") !== ""
     ) {
       const decodedToken = decodeJWT(localStorage.getItem("t2m_accessToken"));
-      if (decodedToken && decodedToken.exp <= moment().unix())
+      if (
+        decodedToken &&
+        (decodedToken.expired || decodedToken.expires_at <= moment().unix())
+      )
+        // context.dispatch({
+        //   type: "set",
+        //   value: {guest : {
+        //    accessToken:
+        //   }}
+        // });
         Axios.post(
           `${process.env.REACT_APP_REST_API_URL}/ws-auth`,
           {

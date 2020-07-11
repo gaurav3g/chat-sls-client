@@ -61,7 +61,10 @@ const useStyles = makeStyles((theme) => ({
 export default function Block(props) {
   const { sender, createdAt, id, self } = props;
   const classes = useStyles({
-    color: (sender.charCodeAt(0) + sender.charCodeAt(sender.length - 1)) % 10,
+    color:
+      (sender?.Username.charCodeAt(0) +
+        sender?.Username.charCodeAt(sender.length - 1)) %
+      10,
   });
 
   const timeStr = moment.unix(createdAt).format("hh:mm");
@@ -70,12 +73,12 @@ export default function Block(props) {
     <div className={clsx(classes.root, self && classes.rootSelf)} id={id}>
       <div className={clsx(classes.shell, self && classes.shellSelf)}>
         <Avatar className={clsx(classes.avatar, self && classes.avatarSelf)}>
-          <Typography variant="body1">{sender.charAt(0)}</Typography>
+          <Typography variant="body1">{sender?.Username.charAt(0)}</Typography>
         </Avatar>
         <div className={classes.block}>
           <div className={clsx(classes.head, self && classes.headSelf)}>
             <Typography variant="body2" className={classes.sender}>
-              {sender}
+              {sender?.Username}
             </Typography>
             <Typography variant="body2" className={classes.message}>
               {props.children}

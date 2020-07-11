@@ -59,9 +59,8 @@ export default function Home() {
   const classes = useStyles();
   const context = useContext(RootContext);
   const [formData, setFormData] = useState({
-    username: {
-      value:
-        decodeJWT(localStorage.getItem("TALK2ME_TEMP_TOKEN")).username || "",
+    email: {
+      value: decodeJWT(localStorage.getItem("TALK2ME_TEMP_TOKEN")).email || "",
       error: false,
       touched: false,
     },
@@ -78,7 +77,7 @@ export default function Home() {
   const handleChange = (event) => {
     const userN = event.target.value;
     setFormData({
-      username: { error: false, value: userN, touched: false },
+      email: { error: false, value: userN, touched: false },
     });
   };
 
@@ -124,16 +123,16 @@ export default function Home() {
   const handleSubmit = (event) => {
     event.preventDefault();
     setLoading(true);
-    if (formData.username.value === "") {
+    if (formData.email.value === "") {
       setFormData({
-        username: { ...formData.username, touched: true, error: true },
+        email: { ...formData.email, touched: true, error: true },
       });
       setLoading(false);
       return false;
     }
-    const token = generateJWT({ username: formData.username.value });
+    const token = generateJWT({ email: formData.email.value });
     Axios.get(
-      `${process.env.REACT_APP_REST_API_URL}/find-username?username=${formData.username.value}`,
+      `${process.env.REACT_APP_REST_API_URL}/get-user?email=${formData.email.value}`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -144,12 +143,12 @@ export default function Home() {
       .then((resp) => {
         if (resp.data.status !== 0) {
           setFormData({
-            username: { ...formData.username, touched: true, error: true },
+            email: { ...formData.email, touched: true, error: true },
           });
         } else {
           Axios.put(
-            `${process.env.REACT_APP_REST_API_URL}/set-username`,
-            { username: formData.username.value },
+            `${process.env.REACT_APP_REST_API_URL}/set-user`,
+            { email: formData.email.value },
             {
               headers: {
                 "Content-Type": "application/json",
@@ -163,6 +162,7 @@ export default function Home() {
               localStorage.setItem(
                 "t2m_userData",
                 JSON.stringify({
+                  email: response.data.Email,
                   preferred_username: response.data.Username,
                 })
               );
@@ -180,7 +180,7 @@ export default function Home() {
             })
             .catch((err) => {
               setFormData({
-                username: { ...formData.username, touched: true, error: true },
+                email: { ...formData.email, touched: true, error: true },
               });
             });
         }
@@ -254,25 +254,24 @@ export default function Home() {
         <form onSubmit={handleSubmit} className={classes.form}>
           <TextField
             className="t2m-home-formfield t2m-home-input"
-            label="Username"
+            label="Email"
             autoFocus
-            type="text"
+            type="email"
             name="input"
             fullWidth
             margin="none"
             variant="outlined"
-            value={formData.username.value}
+            value={formData.email.value}
             onChange={handleChange}
             color="secondary"
             inputProps={{ autoComplete: "off" }}
-            error={formData.username.touched && formData.username.error}
+            error={formData.email.touched && formData.email.error}
             InputProps={{
-              endAdornment: formData.username.touched &&
-                formData.username.error && (
-                  <InputAdornment position="end">
-                    <SvgIcon component={CloseIcon} color={"error"} />
-                  </InputAdornment>
-                ),
+              endAdornment: formData.email.touched && formData.email.error && (
+                <InputAdornment position="end">
+                  <SvgIcon component={CloseIcon} color={"error"} />
+                </InputAdornment>
+              ),
             }}
           ></TextField>
           <Button
