@@ -65,12 +65,7 @@ export default function Home() {
       touched: false,
     },
   });
-  const [guestAuthenticated, setGuestAuthenticated] = useState(
-    decodeJWT(localStorage.getItem("t2m_accessToken")) &&
-      decodeJWT(localStorage.getItem("t2m_accessToken")).exp > moment().unix()
-      ? true
-      : false
-  );
+  const [guestAuthenticated, setGuestAuthenticated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [client, setclient] = useState(null);
 
@@ -82,12 +77,33 @@ export default function Home() {
   };
 
   useEffect(() => {
+    const user = context.state.user;
+    if (
+      user.accessToken &&
+      user.attributes.email &&
+      user.attributes.preferred_username
+    ) {
+      setGuestAuthenticated(true);
+      setFormData({
+        email: { error: false, value: user.attributes.email, touched: false },
+      });
+    } else if (
+      decodeJWT(localStorage.getItem("t2m_accessToken")) &&
+      decodeJWT(localStorage.getItem("t2m_accessToken")).exp > moment().unix()
+    ) {
+      setGuestAuthenticated(true);
+    }
+  }, [context.state.user]);
+
+  useEffect(() => {
     if (guestAuthenticated)
       setclient(
         new W3CWebSocket(
-          `${process.env.REACT_APP_WSS_APIURL}?token=${localStorage.getItem(
-            "t2m_accessToken"
-          )}`
+          `${process.env.REACT_APP_WSS_APIURL}?token=${
+            context.state.user.authenticated
+              ? context.state.user.accessToken
+              : localStorage.getItem("t2m_accessToken")
+          }${context.state.user.authenticated ? "&auth=1" : ""}`
         )
       );
   }, [guestAuthenticated]);
@@ -159,13 +175,20 @@ export default function Home() {
             .then((response) => {
               // console.log(response.data);
               localStorage.setItem("t2m_tempToken", token);
-              localStorage.setItem(
-                "t2m_userData",
-                JSON.stringify({
-                  email: response.data.Email,
-                  preferred_username: response.data.Username,
-                })
-              );
+              const userObj = {
+                email: response.data.Email,
+                preferred_username: response.data.Username,
+              };
+              localStorage.setItem("t2m_userData", JSON.stringify(userObj));
+              // context.dispatch({
+              //   type: "set",
+              //   value: {
+              //     user: {
+              //       ...context.state.user,
+              //       info: { ...context.state.user.info, ...userObj },
+              //     },
+              //   },
+              // });
               localStorage.setItem(
                 "t2m_accessToken",
                 response.data.accessToken

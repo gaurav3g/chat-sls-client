@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-// import { RootContext } from "./../store/Provider";
-
+import React, { useState, useEffect, useContext } from "react";
+import { RootContext } from "./../store/Provider";
+import { useImmer } from "use-immer";
 import { makeStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -9,14 +9,18 @@ import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
 import SendIcon from "@material-ui/icons/Send";
+import Drawer from "@material-ui/core/Drawer";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
 import Block from "../components/Chat/Block";
+import Loader from "../components/Chat/Loader";
+import { Button } from "@material-ui/core";
 
 // import { theme } from "./../theme";
 import segregator from "../helpers/chat/segregator";
 
 // hooks
 import { usePrevious } from "../hooks/hooks";
-import Loader from "../components/Chat/Loader";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -97,9 +101,10 @@ export default function ChatLayout(props) {
   } = props;
 
   // init variables
-  // const context = useContext(RootContext);
+  const context = useContext(RootContext);
   const classes = useStyles();
   const [height, setHeight] = useState(0);
+  const [drawerOpen, setDrawerOpen] = useImmer(false);
   const [message, setMessage] = useState("");
   const [chatWindow, setChatWindow] = useState(null);
   // const [messagesEnd, setMessagesEnd] = useState(null);
@@ -205,9 +210,35 @@ export default function ChatLayout(props) {
             className={classes.menuButton}
             color="inherit"
             aria-label="menu"
+            onClick={() => {
+              setDrawerOpen((draft) => true);
+            }}
           >
             <MenuIcon />
           </IconButton>
+          <Drawer
+            open={drawerOpen}
+            onClose={() => {
+              setDrawerOpen((draft) => false);
+            }}
+          >
+            <List>
+              <ListItem>
+                <Button
+                  onClick={() => {
+                    context.dispatch({
+                      type: "set",
+                      stype: "loginModalOpen",
+                      value: true,
+                    });
+                    setDrawerOpen((draft) => false);
+                  }}
+                >
+                  Login
+                </Button>
+              </ListItem>
+            </List>
+          </Drawer>
           <Typography variant="h6" className={classes.title}>
             {title}
           </Typography>
@@ -237,8 +268,8 @@ export default function ChatLayout(props) {
                     createdAt={message.created_at}
                     self={
                       localStorage.getItem("t2m_userData") &&
-                      JSON.parse(localStorage.getItem("t2m_userData"))
-                        .preferred_username === message.sender
+                      JSON.parse(localStorage.getItem("t2m_userData")).email ===
+                        message.sender?.Email
                         ? true
                         : false
                     }

@@ -63,7 +63,7 @@ export default function Block(props) {
   const classes = useStyles({
     color:
       (sender?.Username.charCodeAt(0) +
-        sender?.Username.charCodeAt(sender.length - 1)) %
+        sender?.Username.charCodeAt(sender?.Username.length - 1)) %
       10,
   });
 

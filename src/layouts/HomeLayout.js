@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { RootContext } from "./../store/Provider";
+
 import { makeStyles } from "@material-ui/core/styles";
 import { Link } from "react-router-dom";
 import AppBar from "@material-ui/core/AppBar";
@@ -13,6 +15,7 @@ import MenuIcon from "@material-ui/icons/Menu";
 // import Icon from "@material-ui/core/Icon";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
+import { Button } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -35,6 +38,7 @@ const useStyles = makeStyles((theme) => ({
 export default function HomeLayout(props) {
   const { title } = props;
   const classes = useStyles();
+  const context = useContext(RootContext);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -62,10 +66,18 @@ export default function HomeLayout(props) {
             >
               <List>
                 <ListItem>
-                  <Link to="/signup">SignUp</Link>
-                </ListItem>
-                <ListItem>
-                  <Link to="/signin">SignIn</Link>
+                  <Button
+                    onClick={() => {
+                      context.dispatch({
+                        type: "set",
+                        stype: "loginModalOpen",
+                        value: true,
+                      });
+                      setDrawerOpen((draft) => false);
+                    }}
+                  >
+                    Login
+                  </Button>
                 </ListItem>
               </List>
             </Drawer>

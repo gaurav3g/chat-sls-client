@@ -3,13 +3,12 @@ import ChatLayout from "../layouts/ChatLayout";
 import { RootContext } from "./../store/Provider";
 
 import validateInput from "./../helpers/message/validateInput";
-import { size } from "lodash";
 
 const Chat = (props) => {
   const context = useContext(RootContext);
 
   const client = context.state.wsClient;
-
+  console.log(client);
   const [messageList, setMessageList] = useState([]);
   const [lastStartKey, setLastStartKey] = useState(null);
   const [startKey, setStartKey] = useState(null);
@@ -20,9 +19,12 @@ const Chat = (props) => {
     if (message && message !== "" && validateInput(message)) {
       const data = {
         action: "sendMessage",
-        token: localStorage.getItem("t2m_accessToken"),
+        token: context.state.user.authenticated
+          ? context.state.user.accessToken
+          : localStorage.getItem("t2m_accessToken"),
         content: message,
       };
+      if (context.state.user.authenticated) data["auth"] = 1;
       client.send(JSON.stringify(data));
     }
   };

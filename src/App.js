@@ -28,6 +28,7 @@ import Signup from "./pages/Signup/Signup";
 import Signin from "./pages/Signin/Signin";
 import NoMatch from "./pages/NoMatch";
 import NewConversation from "./pages/NewConversation/NewConversation";
+import Login from "./containers/login/Login";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -76,12 +77,11 @@ function App(props) {
           .then((response) => {
             context.dispatch({
               type: "set",
+              stype: "t2mToken",
               value: {
-                t2mToken: {
-                  ...context.state.t2mToken,
-                  accessToken: localStorage.getItem("t2m_accessToken"),
-                  refreshToken: localStorage.getItem("t2m_refreshToken"),
-                },
+                ...context.state.t2mToken,
+                accessToken: localStorage.getItem("t2m_accessToken"),
+                refreshToken: localStorage.getItem("t2m_refreshToken"),
               },
             });
             localStorage.setItem("t2m_accessToken", response.data.accessToken);
@@ -99,15 +99,18 @@ function App(props) {
       try {
         Auth.currentSession()
           .then((res) => {
+            // console.log(res);
             let accessToken = res.getAccessToken();
             let jwt = accessToken.getJwtToken();
             Auth.currentUserInfo()
               .then((data) => {
-                setAuthUser((draft) => {
-                  draft.accessToken = jwt;
-                  draft.authenticated = true;
-                  draft.info = data;
-                });
+                // console.log(data);
+                setAuthUser((draft) => ({
+                  ...draft,
+                  ...data,
+                  accessToken: jwt,
+                  authenticated: true,
+                }));
                 localStorage.removeItem("TALK2ME_TEMP_TOKEN");
               })
               .catch((err) => console.log(err));
@@ -124,10 +127,12 @@ function App(props) {
   }, [setAuthUser, context.state.user]);
 
   useEffect(() => {
+    // console.log(authUser);
     if (context.state.user.accessToken !== authUser.accessToken)
       context.dispatch({
         type: "set",
-        value: { user: authUser },
+        stype: "user",
+        value: authUser,
       });
   }, [authUser, context]);
 
@@ -182,6 +187,7 @@ function App(props) {
             <Route component={NoMatch}></Route>
           </Switch>
         </Router>
+        <Login></Login>
       </div>
     </ThemeProvider>
   );
