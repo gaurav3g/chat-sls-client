@@ -127,9 +127,13 @@ export default function SignUp(props) {
           //   console.log("signup", data);
           context.dispatch({
             type: "set",
-            stype: "user",
-            value: { authenticated: true },
-          }); // localStorage.setItem("TALK2ME_TOKEN", token)
+            // stype: "user",
+            value: {
+              user: { ...context.state.user, authenticated: true },
+              loginModalOpen: false,
+            },
+          });
+          // localStorage.setItem("TALK2ME_TOKEN", token)
           // props.setAuthenticated(true)
           // props.history.push("/chat")
         }

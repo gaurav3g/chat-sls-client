@@ -62,8 +62,8 @@ export default function Block(props) {
   const { sender, createdAt, id, self } = props;
   const classes = useStyles({
     color:
-      (sender?.Username.charCodeAt(0) +
-        sender?.Username.charCodeAt(sender?.Username.length - 1)) %
+      (sender?.username.charCodeAt(0) +
+        sender?.username.charCodeAt(sender?.username.length - 1)) %
       10,
   });
 
@@ -73,12 +73,12 @@ export default function Block(props) {
     <div className={clsx(classes.root, self && classes.rootSelf)} id={id}>
       <div className={clsx(classes.shell, self && classes.shellSelf)}>
         <Avatar className={clsx(classes.avatar, self && classes.avatarSelf)}>
-          <Typography variant="body1">{sender?.Username.charAt(0)}</Typography>
+          <Typography variant="body1">{sender?.username.charAt(0)}</Typography>
         </Avatar>
         <div className={classes.block}>
           <div className={clsx(classes.head, self && classes.headSelf)}>
             <Typography variant="body2" className={classes.sender}>
-              {sender?.Username}
+              {sender?.username}
             </Typography>
             <Typography variant="body2" className={classes.message}>
               {props.children}

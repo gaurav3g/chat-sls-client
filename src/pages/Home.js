@@ -176,8 +176,8 @@ export default function Home() {
               // console.log(response.data);
               localStorage.setItem("t2m_tempToken", token);
               const userObj = {
-                email: response.data.Email,
-                preferred_username: response.data.Username,
+                email: response.data.email,
+                preferred_username: response.data.username,
               };
               localStorage.setItem("t2m_userData", JSON.stringify(userObj));
               // context.dispatch({

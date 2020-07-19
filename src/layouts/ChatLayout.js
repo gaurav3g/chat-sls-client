@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useContext } from "react";
 import { RootContext } from "./../store/Provider";
 import { useImmer } from "use-immer";
+import { Auth } from "aws-amplify";
+
+// components
 import { makeStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -145,6 +148,12 @@ export default function ChatLayout(props) {
     }
   }
 
+  const handleLogout = async (event) => {
+    await Auth.signOut();
+    // setAuthenticated(false);
+    // props.history.push("/login");
+  };
+
   // Effects
 
   useEffect(() => {
@@ -269,7 +278,7 @@ export default function ChatLayout(props) {
                     self={
                       localStorage.getItem("t2m_userData") &&
                       JSON.parse(localStorage.getItem("t2m_userData")).email ===
-                        message.sender?.Email
+                        message.sender?.email
                         ? true
                         : false
                     }

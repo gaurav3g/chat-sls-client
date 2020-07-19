@@ -73,13 +73,10 @@ export default function SignIn(props) {
         (data) => {
           context.dispatch({
             type: "set",
-            stype: "user",
-            value: { authenticated: true },
-          });
-          context.dispatch({
-            type: "set",
-            stype: "loginModalOpen",
-            value: false,
+            value: {
+              user: { ...context.state.user, authenticated: true },
+              loginModalOpen: false,
+            },
           });
           // const token = generateJWT({
           //   uid: data.username,

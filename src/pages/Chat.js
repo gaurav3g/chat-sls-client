@@ -8,7 +8,6 @@ const Chat = (props) => {
   const context = useContext(RootContext);
 
   const client = context.state.wsClient;
-  console.log(client);
   const [messageList, setMessageList] = useState([]);
   const [lastStartKey, setLastStartKey] = useState(null);
   const [startKey, setStartKey] = useState(null);
@@ -30,11 +29,8 @@ const Chat = (props) => {
   };
 
   const handleLoadmore = () => {
-    if (
-      startKey &&
-      startKey >= 0 &&
-      (!lastStartKey || startKey < lastStartKey)
-    ) {
+    console.log(startKey, lastStartKey);
+    if (startKey && startKey >= 0 && startKey > lastStartKey) {
       console.log("SEND REQ");
       const data = {
         action: "getRecentMessages",
