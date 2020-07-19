@@ -29,9 +29,8 @@ const Chat = (props) => {
   };
 
   const handleLoadmore = () => {
-    console.log(startKey, lastStartKey);
     if (startKey && startKey >= 0 && startKey > lastStartKey) {
-      console.log("SEND REQ");
+      // console.log("SEND REQ");
       const data = {
         action: "getRecentMessages",
         LastEvaluatedKey: startKey,

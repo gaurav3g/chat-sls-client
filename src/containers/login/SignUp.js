@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import { useImmer } from "use-immer";
 import { Auth } from "aws-amplify";
 import { RootContext } from "./../../store/Provider";
+import { useForm } from "react-hook-form";
 
 // components
 import { makeStyles } from "@material-ui/core/styles";
@@ -11,6 +12,7 @@ import Button from "@material-ui/core/Button";
 import Radio from "@material-ui/core/Radio";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
+import FormHelperText from "@material-ui/core/FormHelperText";
 import FormControl from "@material-ui/core/FormControl";
 import FormLabel from "@material-ui/core/FormLabel";
 
@@ -41,6 +43,8 @@ export default function SignUp(props) {
   const classes = useStyles();
   const context = useContext(RootContext);
   const [isLoading, setIsLoading] = useImmer(false);
+  const { register, handleSubmit, errors } = useForm();
+
   const [formData, setFormData] = useImmer({
     value: {
       email: "",
@@ -90,9 +94,7 @@ export default function SignUp(props) {
     });
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
+  const onSubmit = async (event) => {
     setIsLoading((draft) => true);
 
     try {
@@ -113,7 +115,7 @@ export default function SignUp(props) {
   };
 
   const handleConfirmationSubmit = async (event) => {
-    event.preventDefault();
+    // event.preventDefault();
 
     setIsLoading((draft) => true);
 
@@ -173,9 +175,13 @@ export default function SignUp(props) {
   };
 
   const renderForm = () => {
+    {
+      console.log(errors);
+    }
     return (
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <TextField
+          inputProps={{ ref: register({ required: true }) }}
           label="Username"
           autoFocus
           type="text"
@@ -185,8 +191,11 @@ export default function SignUp(props) {
           variant="outlined"
           value={formData.value.username}
           onChange={handleChange}
+          error={errors.username}
+          helperText={errors.username?.type === "required" ? "Required" : " "}
         ></TextField>
         <TextField
+          inputProps={{ ref: register({ required: true }) }}
           label="Email"
           type="email"
           name="email"
@@ -195,6 +204,8 @@ export default function SignUp(props) {
           variant="outlined"
           value={formData.value.email}
           onChange={handleChange}
+          error={errors.email}
+          helperText={errors.email?.type === "required" ? "Required" : " "}
         ></TextField>
         <FormControl
           component="fieldset"
@@ -211,22 +222,41 @@ export default function SignUp(props) {
           >
             <FormControlLabel
               value="female"
-              control={<Radio color="primary" />}
+              control={
+                <Radio
+                  inputProps={{ ref: register({ required: true }) }}
+                  color="primary"
+                />
+              }
               label="Female"
             />
             <FormControlLabel
               value="male"
-              control={<Radio color="primary" />}
+              control={
+                <Radio
+                  inputProps={{ ref: register({ required: true }) }}
+                  color="primary"
+                />
+              }
               label="Male"
             />
             <FormControlLabel
               value="other"
-              control={<Radio color="primary" />}
+              control={
+                <Radio
+                  inputProps={{ ref: register({ required: true }) }}
+                  color="primary"
+                />
+              }
               label="Other"
             />
           </RadioGroup>
+          <FormHelperText error>
+            {errors.gender?.type === "required" ? "Required" : " "}
+          </FormHelperText>
         </FormControl>
         <TextField
+          inputProps={{ ref: register({ required: true }) }}
           label="Password"
           type="password"
           name="password"
@@ -235,8 +265,11 @@ export default function SignUp(props) {
           variant="outlined"
           value={formData.value.password}
           onChange={handleChange}
+          error={errors.password}
+          helperText={errors.password?.type === "required" ? "Required" : " "}
         ></TextField>
         <TextField
+          inputProps={{ ref: register({ required: true }) }}
           label="Confirm Password"
           type="password"
           name="confirmPassword"
@@ -245,6 +278,10 @@ export default function SignUp(props) {
           variant="outlined"
           value={formData.value.confirmPassword}
           onChange={handleChange}
+          error={errors.confirmPassword}
+          helperText={
+            errors.confirmPassword?.type === "required" ? "Required" : " "
+          }
         ></TextField>
         <Button
           variant="contained"
@@ -252,7 +289,7 @@ export default function SignUp(props) {
           size="large"
           fullWidth
           color="primary"
-          disabled={!validateForm()}
+          // disabled={!validateForm()}
           className={classes.verticalSpacing}
         >
           Signup
